@@ -29,8 +29,15 @@ export const Roadmap: React.FC = () => {
   const { startQuiz } = useQuizStore();
   const [activeDay, setActiveDay] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [previewDay, setPreviewDay] = useState<number | null>(null);
 
-  const handleDayClick = (dayId: number) => {
+  const handleDayClick = (dayId: number, isUnlocked: boolean) => {
+    if (!isUnlocked) {
+        // Show topic preview instead of starting quiz
+        setPreviewDay(dayId);
+        return;
+    }
+    
     try {
         const mockQuestions: Question[] = [];
         for (let d = 1; d <= 45; d++) {
@@ -56,10 +63,41 @@ export const Roadmap: React.FC = () => {
     }
   };
 
+  const selectedPreview = roadmap.find(d => d.id === previewDay);
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 p-4">
       {activeDay && (
         <QuizEngine dayId={activeDay} onClose={() => setActiveDay(null)} />
+      )}
+
+      {/* Topic Preview Modal (For Locked Days) */}
+      {previewDay && selectedPreview && (
+        <div className="fixed inset-0 z-[110] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-6">
+            <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] max-w-sm w-full shadow-2xl animate-in zoom-in duration-300">
+                <div className="w-16 h-16 bg-slate-800 rounded-2xl rotate-45 flex items-center justify-center mx-auto mb-6 border border-slate-700">
+                    <span className="-rotate-45 text-2xl font-black text-slate-500">{selectedPreview.id}</span>
+                </div>
+                <h3 className="text-center text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-2">Upcoming Mission</h3>
+                <h2 className="text-center text-xl font-black italic tracking-tighter text-blue-400 mb-6 uppercase">{selectedPreview.title}</h2>
+                
+                <div className="space-y-3 mb-8">
+                    {selectedPreview.subTopics.map((s, i) => (
+                        <div key={i} className="flex items-center gap-3 bg-slate-950/50 p-3 rounded-xl border border-slate-800/50">
+                            <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{s}</span>
+                        </div>
+                    ))}
+                </div>
+
+                <button 
+                    onClick={() => setPreviewDay(null)}
+                    className="w-full py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl font-black text-xs tracking-widest transition-all"
+                >
+                    CLOSE PREVIEW
+                </button>
+            </div>
+        </div>
       )}
 
       {error && (
@@ -93,7 +131,6 @@ export const Roadmap: React.FC = () => {
       </div>
 
       <div className="max-w-lg mx-auto space-y-16 relative pb-40">
-        {/* Animated Connection Line */}
         <div className="absolute left-1/2 top-0 bottom-0 w-[2px] bg-gradient-to-b from-blue-500 via-emerald-500 via-orange-500 via-purple-500 to-rose-500 opacity-10 -translate-x-1/2 z-0" />
 
         {WORLD_NAMES.map((world, wIdx) => {
@@ -110,13 +147,12 @@ export const Roadmap: React.FC = () => {
                 {worldDays.map((day, dIdx) => (
                   <div key={day.id} className="relative group">
                     <button
-                        onClick={() => handleDayClick(day.id)}
-                        disabled={!day.unlocked}
+                        onClick={() => handleDayClick(day.id, day.unlocked)}
                         className={`
                         relative flex items-center justify-center w-24 h-24 rounded-[2.5rem] rotate-45 transition-all duration-500
                         ${day.completed ? 'bg-emerald-500 shadow-[0_0_40px_rgba(16,185,129,0.3)]' : 
                             day.unlocked ? 'bg-slate-900 border-2 border-slate-700 hover:scale-110 active:scale-95 shadow-2xl hover:border-white/20' : 
-                            'bg-slate-950 border border-slate-900 opacity-30'}
+                            'bg-slate-950 border border-slate-900 opacity-30 hover:opacity-100 hover:scale-105 active:scale-95'}
                         `}
                         style={{
                         borderColor: day.unlocked && !day.completed ? WORLD_COLORS[wIdx] : undefined,
@@ -142,7 +178,7 @@ export const Roadmap: React.FC = () => {
                         </div>
                     </button>
                     
-                    {/* Tooltip Content */}
+                    {/* Tooltip for Unlocked Days */}
                     {day.unlocked && (
                         <div className={`absolute -top-4 ${dIdx % 2 === 0 ? 'left-32' : 'right-32'} w-48 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none`}>
                             <div className="bg-slate-900 border border-slate-800 p-3 rounded-2xl shadow-2xl">
