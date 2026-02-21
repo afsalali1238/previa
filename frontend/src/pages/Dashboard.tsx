@@ -1,60 +1,45 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../features/auth/store/authStore';
+import { Roadmap } from '../features/roadmap/Roadmap';
+import { TheLounge } from '../features/social/TheLounge';
+import { useProviaStore } from '../features/roadmap/store/proviaStore';
 
 export const Dashboard: React.FC = () => {
-    const { user, logout } = useAuthStore();
+    const { logout } = useAuthStore();
+    const { updateStreak } = useProviaStore();
+    const [tab, setTab] = useState<'journey' | 'social'>('journey');
+
+    useEffect(() => {
+        updateStreak();
+    }, [updateStreak]);
 
     return (
-        <div style={{
-            minHeight: '100vh',
-            background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
-            fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-            color: '#e2e8f0',
-            padding: '2rem',
-        }}>
-            <div style={{
-                maxWidth: '600px',
-                margin: '0 auto',
-                paddingTop: '3rem',
-            }}>
-                <h1 style={{
-                    fontSize: '1.75rem',
-                    fontWeight: 800,
-                    marginBottom: '1rem',
-                    background: 'linear-gradient(135deg, #60a5fa, #a78bfa)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                }}>
-                    Welcome, {user?.displayName || 'Hero'}! 🎯
-                </h1>
-
-                <div style={{
-                    backgroundColor: 'rgba(30, 41, 59, 0.8)',
-                    borderRadius: '1rem',
-                    padding: '1.5rem',
-                    marginBottom: '1rem',
-                    border: '1px solid rgba(148, 163, 184, 0.1)',
-                }}>
-                    <p style={{ color: '#94a3b8', marginBottom: '0.5rem' }}>Your UID</p>
-                    <p style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>{user?.uid || 'Not logged in'}</p>
-                </div>
-
+        <div className="relative min-h-screen bg-slate-950 pb-24">
+            {/* Bottom Nav */}
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] flex gap-2 bg-slate-900/90 backdrop-blur-md p-2 rounded-full border border-slate-800 shadow-2xl">
+                <button 
+                  onClick={() => setTab('journey')}
+                  className={`px-6 py-3 rounded-full text-xs font-black transition-all ${tab === 'journey' ? 'bg-blue-600 text-white' : 'text-slate-500'}`}
+                >
+                  JOURNEY
+                </button>
+                <button 
+                  onClick={() => setTab('social')}
+                  className={`px-6 py-3 rounded-full text-xs font-black transition-all ${tab === 'social' ? 'bg-emerald-600 text-white' : 'text-slate-500'}`}
+                >
+                  LOUNGE
+                </button>
                 <button
                     onClick={() => logout()}
-                    style={{
-                        padding: '0.75rem 2rem',
-                        background: '#dc2626',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '0.75rem',
-                        fontSize: '1rem',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                    }}
+                    className="p-3 text-slate-500 hover:text-rose-500 transition-colors"
                 >
-                    Logout
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
                 </button>
             </div>
+
+            {tab === 'journey' ? <Roadmap /> : <TheLounge />}
         </div>
     );
 };

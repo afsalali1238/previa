@@ -1,13 +1,29 @@
 import { create } from 'zustand';
 import type { AuthState } from '../types/user.types';
-import { auth } from '../../../lib/firebase/config';
 
+// Simulation of Firebase Auth for the Local-First Pivot
 export const useAuthStore = create<AuthState>((set) => ({
-    user: null,
+    user: {
+        uid: 'local-hero-123',
+        displayName: 'Afsal Ali',
+        email: 'hero@provia.app',
+        emailVerified: true,
+        isAnonymous: false,
+        metadata: {},
+        providerData: [],
+        phoneNumber: null,
+        photoURL: null,
+        tenantId: null,
+        delete: async () => {},
+        getIdToken: async () => '',
+        getIdTokenResult: async () => ({}) as any,
+        reload: async () => {},
+        toJSON: () => ({}),
+    } as any,
     profile: null,
-    loading: true,
+    loading: false,
     error: null,
-    isAuthenticated: false,
+    isAuthenticated: true,
 
     setUser: (user) => set({ user, isAuthenticated: !!user }),
     setProfile: (profile) => set({ profile }),
@@ -15,11 +31,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     setError: (error) => set({ error }),
 
     logout: async () => {
-        try {
-            await auth.signOut();
-            set({ user: null, profile: null, isAuthenticated: false, error: null });
-        } catch (error: any) {
-            set({ error: error.message });
-        }
+        set({ user: null, profile: null, isAuthenticated: false, error: null });
     },
 }));
