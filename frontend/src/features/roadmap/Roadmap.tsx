@@ -33,7 +33,6 @@ export const Roadmap: React.FC = () => {
 
   const handleDayClick = (dayId: number, isUnlocked: boolean) => {
     if (!isUnlocked) {
-        // Show topic preview instead of starting quiz
         setPreviewDay(dayId);
         return;
     }
@@ -71,7 +70,6 @@ export const Roadmap: React.FC = () => {
         <QuizEngine dayId={activeDay} onClose={() => setActiveDay(null)} />
       )}
 
-      {/* Topic Preview Modal (For Locked Days) */}
       {previewDay && selectedPreview && (
         <div className="fixed inset-0 z-[110] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-6">
             <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] max-w-sm w-full shadow-2xl animate-in zoom-in duration-300">
@@ -106,7 +104,6 @@ export const Roadmap: React.FC = () => {
         </div>
       )}
 
-      {/* Header Stats */}
       <div className="max-w-4xl mx-auto flex justify-between items-center mb-12 bg-slate-900/50 p-6 rounded-[2.5rem] border border-slate-800 backdrop-blur-xl sticky top-4 z-50">
         <div className="flex items-center gap-4">
           <div className="bg-amber-500/10 px-6 py-3 rounded-2xl border border-amber-500/20 flex items-center gap-3">
@@ -178,7 +175,6 @@ export const Roadmap: React.FC = () => {
                         </div>
                     </button>
                     
-                    {/* Tooltip for Unlocked Days */}
                     {day.unlocked && (
                         <div className={`absolute -top-4 ${dIdx % 2 === 0 ? 'left-32' : 'right-32'} w-48 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none`}>
                             <div className="bg-slate-900 border border-slate-800 p-3 rounded-2xl shadow-2xl">
