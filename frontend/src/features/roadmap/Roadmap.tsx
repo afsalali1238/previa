@@ -32,17 +32,16 @@ export const Roadmap: React.FC = () => {
 
   const handleDayClick = (dayId: number) => {
     try {
-        // Mock data generator for testing Ghost Rule
         const mockQuestions: Question[] = [];
         for (let d = 1; d <= 45; d++) {
             for (let q = 1; q <= 60; q++) {
                 mockQuestions.push({
                     id: `d${d}q${q}`,
-                    question: `Sample Question ${q} for Day ${d}?`,
+                    question: `Clinical Question ${q} regarding ${roadmap.find(day => day.id === d)?.title || 'Topic'}?`,
                     options: ['Option A', 'Option B', 'Option C', 'Option D'],
                     correctAnswer: 0,
-                    explanation: 'Example explanation.',
-                    topic: 'General Pharmacy',
+                    explanation: 'Correct clinical rationale.',
+                    topic: roadmap.find(day => day.id === d)?.title || 'Pharmacy',
                     dayId: d
                 });
             }
@@ -94,6 +93,7 @@ export const Roadmap: React.FC = () => {
       </div>
 
       <div className="max-w-lg mx-auto space-y-16 relative pb-40">
+        {/* Animated Connection Line */}
         <div className="absolute left-1/2 top-0 bottom-0 w-[2px] bg-gradient-to-b from-blue-500 via-emerald-500 via-orange-500 via-purple-500 to-rose-500 opacity-10 -translate-x-1/2 z-0" />
 
         {WORLD_NAMES.map((world, wIdx) => {
@@ -108,43 +108,52 @@ export const Roadmap: React.FC = () => {
               
               <div className="flex flex-col items-center gap-14">
                 {worldDays.map((day, dIdx) => (
-                  <button
-                    key={day.id}
-                    onClick={() => handleDayClick(day.id)}
-                    disabled={!day.unlocked}
-                    className={`
-                      relative group flex items-center justify-center w-24 h-24 rounded-[2.5rem] rotate-45 transition-all duration-500
-                      ${day.completed ? 'bg-emerald-500 shadow-[0_0_40px_rgba(16,185,129,0.3)]' : 
-                        day.unlocked ? 'bg-slate-900 border-2 border-slate-700 hover:scale-110 active:scale-95 shadow-2xl hover:border-white/20' : 
-                        'bg-slate-950 border border-slate-900 opacity-30'}
-                    `}
-                    style={{
-                      borderColor: day.unlocked && !day.completed ? WORLD_COLORS[wIdx] : undefined,
-                      marginLeft: dIdx % 2 === 0 ? '80px' : '-80px'
-                    }}
-                  >
-                    <div className="-rotate-45 flex flex-col items-center">
-                      <span className={`text-lg font-black ${day.unlocked ? 'text-white' : 'text-slate-700'}`}>{day.id}</span>
-                      {day.completed ? (
-                        <svg className="w-6 h-6 text-white animate-in zoom-in duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
-                        </svg>
-                      ) : day.unlocked ? (
-                        <div className="flex flex-col items-center">
-                            <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-ping mb-1" />
-                            <span className="text-[8px] font-black text-blue-400 tracking-widest">START</span>
+                  <div key={day.id} className="relative group">
+                    <button
+                        onClick={() => handleDayClick(day.id)}
+                        disabled={!day.unlocked}
+                        className={`
+                        relative flex items-center justify-center w-24 h-24 rounded-[2.5rem] rotate-45 transition-all duration-500
+                        ${day.completed ? 'bg-emerald-500 shadow-[0_0_40px_rgba(16,185,129,0.3)]' : 
+                            day.unlocked ? 'bg-slate-900 border-2 border-slate-700 hover:scale-110 active:scale-95 shadow-2xl hover:border-white/20' : 
+                            'bg-slate-950 border border-slate-900 opacity-30'}
+                        `}
+                        style={{
+                        borderColor: day.unlocked && !day.completed ? WORLD_COLORS[wIdx] : undefined,
+                        marginLeft: dIdx % 2 === 0 ? '80px' : '-80px'
+                        }}
+                    >
+                        <div className="-rotate-45 flex flex-col items-center">
+                        <span className={`text-lg font-black ${day.unlocked ? 'text-white' : 'text-slate-700'}`}>{day.id}</span>
+                        {day.completed ? (
+                            <svg className="w-6 h-6 text-white animate-in zoom-in duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
+                            </svg>
+                        ) : day.unlocked ? (
+                            <div className="flex flex-col items-center">
+                                <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-ping mb-1" />
+                                <span className="text-[8px] font-black text-blue-400 tracking-widest">START</span>
+                            </div>
+                        ) : (
+                            <svg className="w-5 h-5 text-slate-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        )}
                         </div>
-                      ) : (
-                        <svg className="w-5 h-5 text-slate-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                      )}
-                    </div>
-
-                    {day.completed && (
-                        <div className="absolute inset-0 rounded-[2.5rem] border-2 border-white/20 animate-pulse" />
+                    </button>
+                    
+                    {/* Tooltip Content */}
+                    {day.unlocked && (
+                        <div className={`absolute -top-4 ${dIdx % 2 === 0 ? 'left-32' : 'right-32'} w-48 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none`}>
+                            <div className="bg-slate-900 border border-slate-800 p-3 rounded-2xl shadow-2xl">
+                                <p className="text-[10px] font-black text-blue-400 uppercase mb-1">{day.title}</p>
+                                {day.subTopics.map((s, i) => (
+                                    <p key={i} className="text-[9px] text-slate-500 leading-tight">• {s}</p>
+                                ))}
+                            </div>
+                        </div>
                     )}
-                  </button>
+                  </div>
                 ))}
               </div>
             </div>
