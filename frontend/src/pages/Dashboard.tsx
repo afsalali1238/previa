@@ -496,7 +496,7 @@ export const Dashboard: React.FC = () => {
   const streak = useProviaStore((s: ProviaState) => s.streak);
   const heroCredits = useProviaStore((s: ProviaState) => s.heroCredits);
   const updateStreak = useProviaStore((s: ProviaState) => s.updateStreak);
-  const roadmap = useProviaStore((s: ProviaState) => s.roadmap);
+
   const { startQuiz } = useQuizStore();
   const { mode } = useThemeStore();
 
