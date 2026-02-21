@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../features/auth/store/authStore';
-import { useProviaStore } from '../features/roadmap/store/proviaStore';
+import { useProviaStore, type ProviaState } from '../features/roadmap/store/proviaStore';
 import { useQuizStore } from '../features/quiz/store/quizStore';
 import { useThemeStore } from '../features/theme/themeStore';
 import type { Question } from '../features/quiz/store/quizStore';
@@ -493,9 +493,11 @@ const TAB_CONFIG: { id: TabId; label: string; icon: string }[] = [
 ];
 
 export const Dashboard: React.FC = () => {
-  const { updateStreak, heroCredits, streak } = useProviaStore();
+  const streak = useProviaStore((s: ProviaState) => s.streak);
+  const heroCredits = useProviaStore((s: ProviaState) => s.heroCredits);
+  const updateStreak = useProviaStore((s: ProviaState) => s.updateStreak);
+  const roadmap = useProviaStore((s: ProviaState) => s.roadmap);
   const { startQuiz } = useQuizStore();
-  const { roadmap } = useProviaStore();
   const { mode } = useThemeStore();
 
   const [tab, setTab] = useState<TabId>('home');

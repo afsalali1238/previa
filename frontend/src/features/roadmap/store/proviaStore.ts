@@ -21,7 +21,7 @@ export interface RoadmapDay {
   score: number;
 }
 
-interface ProviaState {
+export interface ProviaState {
   heroCredits: number;
   streak: number;
   lastLogin: string | null;
