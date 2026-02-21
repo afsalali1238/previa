@@ -1,6 +1,9 @@
 import React from 'react';
+import { useAuthStore } from '../features/auth/store/authStore';
 
 export const LandingPage: React.FC = () => {
+  const { login } = useAuthStore();
+
   return (
     <div className="min-h-screen bg-[#020617] text-white font-sans selection:bg-blue-500/30">
       {/* Navbar */}
@@ -9,7 +12,12 @@ export const LandingPage: React.FC = () => {
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-black italic">P</div>
           <span className="text-xl font-black tracking-tighter italic bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">PROVIA</span>
         </div>
-        <a href="/login" className="text-sm font-bold hover:text-blue-400 transition-colors">LOGIN</a>
+        <button 
+          onClick={() => login()}
+          className="text-sm font-bold hover:text-blue-400 transition-colors uppercase tracking-widest"
+        >
+          Enter App
+        </button>
       </nav>
 
       {/* Hero Section */}
@@ -26,7 +34,10 @@ export const LandingPage: React.FC = () => {
         </p>
         
         <div className="flex flex-col md:flex-row gap-4 justify-center pt-8">
-          <button className="px-10 py-5 bg-blue-600 hover:bg-blue-500 rounded-2xl font-black text-sm tracking-widest transition-all shadow-[0_0_40px_rgba(37,99,235,0.3)] hover:scale-105 active:scale-95">
+          <button 
+            onClick={() => login()}
+            className="px-10 py-5 bg-blue-600 hover:bg-blue-500 rounded-2xl font-black text-sm tracking-widest transition-all shadow-[0_0_40px_rgba(37,99,235,0.3)] hover:scale-105 active:scale-95"
+          >
             START YOUR JOURNEY
           </button>
           <button className="px-10 py-5 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl font-black text-sm tracking-widest transition-all">
@@ -34,9 +45,18 @@ export const LandingPage: React.FC = () => {
           </button>
         </div>
         
-        <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
-          Currently Open & Free · No credit card required · DHA / MOH / DOH / SLE
-        </p>
+        <div className="flex flex-col items-center gap-4 pt-8">
+            <button 
+                onClick={() => login()}
+                className="flex items-center gap-3 px-6 py-3 bg-white text-black rounded-xl font-bold text-sm hover:bg-slate-200 transition-all"
+            >
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+                Continue with Google
+            </button>
+            <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
+                Testing Mode: Instant Access Enabled · No Sign-up Required
+            </p>
+        </div>
       </header>
 
       {/* Features Grid */}

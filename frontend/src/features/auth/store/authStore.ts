@@ -1,36 +1,20 @@
 import { create } from 'zustand';
-import type { AuthState } from '../types/user.types';
 
-// Simulation of Firebase Auth for the Local-First Pivot
-export const useAuthStore = create<AuthState>((set) => ({
+// Bypass Auth for testing: Automatically "logs in" as a guest
+export const useAuthStore = create<any>((set) => ({
     user: {
-        uid: 'local-hero-123',
-        displayName: 'Afsal Ali',
-        email: 'hero@provia.app',
-        emailVerified: true,
-        isAnonymous: false,
-        metadata: {},
-        providerData: [],
-        phoneNumber: null,
-        photoURL: null,
-        tenantId: null,
-        delete: async () => {},
-        getIdToken: async () => '',
-        getIdTokenResult: async () => ({}) as any,
-        reload: async () => {},
-        toJSON: () => ({}),
-    } as any,
-    profile: null,
-    loading: false,
-    error: null,
-    isAuthenticated: true,
+        uid: 'guest-tester-' + Math.random().toString(36).substr(2, 9),
+        displayName: 'Guest Tester',
+        email: 'tester@provia.app',
+    },
+    isAuthenticated: false,
 
-    setUser: (user) => set({ user, isAuthenticated: !!user }),
-    setProfile: (profile) => set({ profile }),
-    setLoading: (loading) => set({ loading }),
-    setError: (error) => set({ error }),
+    // Google Sign In now acts as an immediate bypass
+    login: async () => {
+        set({ isAuthenticated: true });
+    },
 
     logout: async () => {
-        set({ user: null, profile: null, isAuthenticated: false, error: null });
+        set({ isAuthenticated: false });
     },
 }));
