@@ -2,19 +2,65 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+/* ═══ Theme Variables ═══ */
+:root,
+[data-theme="dark"] {
+  --bg-primary: #020617;
+  --bg-secondary: #0f172a;
+  --bg-card: #1e293b;
+  --bg-elevated: rgba(15, 23, 42, 0.8);
+  --border: #1e293b;
+  --border-subtle: rgba(30, 41, 59, 0.5);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #475569;
+  --accent-blue: #3b82f6;
+  --accent-green: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-rose: #f43f5e;
+
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
   color-scheme: dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #020617;
-
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --sat: env(safe-area-inset-top);
+  --sar: env(safe-area-inset-right);
+  --sab: env(safe-area-inset-bottom);
+  --sal: env(safe-area-inset-left);
+}
+
+[data-theme="light"] {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-card: #f1f5f9;
+  --bg-elevated: rgba(255, 255, 255, 0.9);
+  --border: #e2e8f0;
+  --border-subtle: rgba(226, 232, 240, 0.5);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  color-scheme: light;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+html {
+  scroll-behavior: smooth;
+  overscroll-behavior: none;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 body {
@@ -22,8 +68,90 @@ body {
   display: flex;
   min-width: 320px;
   min-height: 100vh;
+  min-height: 100dvh;
+  touch-action: manipulation;
+  overscroll-behavior-y: contain;
+  padding-top: var(--sat);
+  padding-left: var(--sal);
+  padding-right: var(--sar);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s, color 0.3s;
 }
 
 #root {
   width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ═══ Animations ═══ */
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+  }
+}
+
+@keyframes float-up {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-float-up {
+  animation: float-up 1s ease-out forwards;
+}
+
+/* ═══ Theme Utilities ═══ */
+.theme-bg {
+  background-color: var(--bg-primary);
+}
+
+.theme-bg-card {
+  background-color: var(--bg-secondary);
+}
+
+.theme-bg-elevated {
+  background-color: var(--bg-elevated);
+}
+
+.theme-border {
+  border-color: var(--border);
+}
+
+.theme-text {
+  color: var(--text-primary);
+}
+
+.theme-text-secondary {
+  color: var(--text-secondary);
+}
+
+.theme-text-muted {
+  color: var(--text-muted);
 }

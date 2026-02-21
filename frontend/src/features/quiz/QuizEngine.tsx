@@ -5,69 +5,75 @@ import { useProviaStore } from '../roadmap/store/proviaStore';
 export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ dayId, onClose }) => {
   const { questions, currentIndex, submitAnswer, finishQuiz } = useQuizStore();
   const { completeDay } = useProviaStore();
-  const [result, setResult] = useState<{ score: number; passed: boolean; cooldownMins: number } | null>(null);
-  const [showGate, setShowGate] = useState(true);
+  const [result, setResult] = useState<{ score: number; passed: boolean; cooldownMins: number; attemptsLeft?: number; lockedUntilTomorrow?: boolean } | null>(null);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+
+  const currentQ = questions[currentIndex];
+  const isCorrect = selectedAnswer !== null && currentQ && selectedAnswer === currentQ.correctAnswer;
+  const isLast = currentIndex === questions.length - 1;
 
   const handleAnswer = (idx: number) => {
-    submitAnswer(idx);
-    if (currentIndex === questions.length - 1) {
+    if (showFeedback) return; // prevent double-tap
+    setSelectedAnswer(idx);
+    setShowFeedback(true);
+  };
+
+  const handleNext = () => {
+    if (selectedAnswer === null) return;
+    submitAnswer(selectedAnswer);
+
+    if (isLast) {
       const res = finishQuiz(dayId);
       setResult(res);
       if (res.passed) {
         completeDay(dayId, res.score);
       }
     }
+
+    setSelectedAnswer(null);
+    setShowFeedback(false);
   };
 
-  if (showGate) {
-    return (
-      <div className="fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-xl flex items-center justify-center p-6 text-center">
-        <div className="max-w-sm w-full space-y-8 bg-slate-900 border border-slate-800 p-8 rounded-[3rem] shadow-2xl">
-          <div className="w-20 h-20 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto text-4xl">📚</div>
-          <div>
-            <h2 className="text-2xl font-black mb-2 uppercase italic tracking-tighter">Mission Activation</h2>
-            <p className="text-slate-400 text-sm leading-relaxed">
-              Are you ready to start today's test? Review the <span className="text-blue-400 font-bold">Telegram Study Materials</span> before proceeding.
-            </p>
-          </div>
-          <div className="space-y-3">
-            <button 
-              onClick={() => setShowGate(false)}
-              className="w-full py-4 bg-blue-600 rounded-2xl font-black text-xs tracking-widest hover:bg-blue-500 transition-all shadow-lg"
-            >
-              LAUNCH TEST
-            </button>
-            <button 
-              onClick={onClose}
-              className="w-full py-4 bg-slate-800 rounded-2xl font-black text-xs tracking-widest text-slate-400 hover:bg-slate-700 transition-all"
-            >
-              NOT READY
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
+  // ── Result Screen ──
   if (result) {
     return (
-      <div className="fixed inset-0 z-[100] bg-slate-950 flex items-center justify-center p-6 text-center">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 text-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
         <div className="max-w-sm w-full space-y-6">
-          <div className={`text-6xl mb-4 ${result.passed ? 'text-emerald-500' : 'text-rose-500'}`}>
+          <div className="text-6xl mb-4">
             {result.passed ? '🎉' : '⏳'}
           </div>
-          <h2 className="text-3xl font-black tracking-tighter italic">{result.passed ? 'MASTERY ACHIEVED!' : 'STUDY REQUIRED'}</h2>
-          <div className="text-5xl font-mono text-blue-400">{Math.round(result.score)}%</div>
-          
-          <p className="text-slate-400 text-sm">
-            {result.passed 
-              ? `Congratulations! You have unlocked the next day and earned 10 Hero Credits.` 
-              : `You didn't reach the 80% mastery threshold. A ${result.cooldownMins} minute cooldown is active. Go back and learn the topic.`}
+          <h2 className="text-3xl font-black tracking-tighter italic" style={{ color: 'var(--text-primary)' }}>
+            {result.passed ? 'MASTERY ACHIEVED!' : 'STUDY REQUIRED'}
+          </h2>
+          <div className="text-5xl font-mono" style={{ color: result.passed ? 'var(--accent-green)' : '#ef4444' }}>
+            {Math.round(result.score)}%
+          </div>
+
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            {result.passed
+              ? 'Congratulations! You have unlocked the next day and earned 10 Hero Credits.'
+              : result.lockedUntilTomorrow
+                ? 'You have used all 3 attempts today. Come back tomorrow!'
+                : `You didn't reach the 80% pass mark. Go review the topic and come back in 30 minutes. ${result.attemptsLeft ?? 0} attempt(s) remaining today.`
+            }
           </p>
 
-          <button 
+          <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+            <div className="flex justify-between text-xs">
+              <span style={{ color: 'var(--text-muted)' }}>Required</span>
+              <span className="font-bold" style={{ color: 'var(--text-primary)' }}>80%</span>
+            </div>
+            <div className="flex justify-between text-xs mt-1">
+              <span style={{ color: 'var(--text-muted)' }}>Your Score</span>
+              <span className="font-bold" style={{ color: result.passed ? 'var(--accent-green)' : '#ef4444' }}>{Math.round(result.score)}%</span>
+            </div>
+          </div>
+
+          <button
             onClick={onClose}
-            className="w-full py-4 bg-slate-800 rounded-2xl font-black text-xs tracking-widest hover:bg-slate-700 transition-all"
+            className="w-full py-4 rounded-2xl font-black text-xs tracking-widest active:scale-95 transition-transform"
+            style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}
           >
             RETURN TO ROADMAP
           </button>
@@ -76,42 +82,114 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
     );
   }
 
-  const currentQ = questions[currentIndex];
+  // ── No question fallback ──
   if (!currentQ) return (
-    <div className="fixed inset-0 z-[100] bg-slate-950 flex items-center justify-center">
-        <button onClick={onClose} className="text-slate-500 font-bold uppercase tracking-widest">Back to Roadmap</button>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
+      <button onClick={onClose} className="font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Back to Roadmap</button>
     </div>
   );
 
+  // ── Quiz Screen ──
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-950 flex flex-col animate-in fade-in duration-500">
-      <div className="h-2 bg-slate-900 w-full">
-        <div 
-          className="h-full bg-gradient-to-r from-blue-600 to-emerald-500 transition-all duration-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]" 
+    <div className="fixed inset-0 z-[100] flex flex-col" style={{ backgroundColor: 'var(--bg-primary)' }}>
+      {/* Progress bar */}
+      <div className="h-2 w-full" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+        <div
+          className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 transition-all duration-500"
           style={{ width: `${((currentIndex + 1) / (questions.length || 1)) * 100}%` }}
         />
       </div>
 
-      <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full p-6 pt-12 overflow-y-auto pb-12">
-        <div className="mb-8">
-          <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Day {dayId} Mission • {currentIndex + 1} / {questions.length || 0}</span>
-          <h3 className="text-xl font-bold mt-4 leading-relaxed tracking-tight">{currentQ.question}</h3>
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid var(--border)' }}>
+        <button onClick={onClose} className="p-1 rounded-lg active:scale-90" style={{ color: 'var(--text-muted)' }}>
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+        <span className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
+          Day {dayId} · {currentIndex + 1}/{questions.length}
+        </span>
+        <div className="w-5" /> {/* spacer */}
+      </div>
+
+      {/* Question + Options */}
+      <div className="flex-1 flex flex-col max-w-lg mx-auto w-full px-5 pt-6 overflow-y-auto pb-8">
+        <h3 className="text-base font-bold leading-relaxed mb-6" style={{ color: 'var(--text-primary)' }}>
+          {currentQ.question}
+        </h3>
+
+        <div className="space-y-3 flex-1">
+          {currentQ.options.map((opt, i) => {
+            const isSelected = selectedAnswer === i;
+            const isCorrectOption = i === currentQ.correctAnswer;
+            let borderColor = 'var(--border)';
+            let bgColor = 'var(--bg-secondary)';
+            let textColor = 'var(--text-secondary)';
+            let labelBg = 'var(--bg-card)';
+            let labelColor = 'var(--text-muted)';
+
+            if (showFeedback) {
+              if (isCorrectOption) {
+                borderColor = '#10b981';
+                bgColor = '#10b98110';
+                textColor = 'var(--text-primary)';
+                labelBg = '#10b98120';
+                labelColor = '#10b981';
+              } else if (isSelected && !isCorrectOption) {
+                borderColor = '#ef4444';
+                bgColor = '#ef444410';
+                textColor = 'var(--text-primary)';
+                labelBg = '#ef444420';
+                labelColor = '#ef4444';
+              }
+            } else if (isSelected) {
+              borderColor = 'var(--accent-blue)';
+              bgColor = 'var(--accent-blue)' + '10';
+            }
+
+            return (
+              <button
+                key={i}
+                onClick={() => handleAnswer(i)}
+                disabled={showFeedback}
+                className="w-full p-4 rounded-xl text-left flex items-center gap-3 transition-all active:scale-[0.98]"
+                style={{ backgroundColor: bgColor, border: `1.5px solid ${borderColor}` }}
+              >
+                <div className="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center text-[10px] font-black" style={{ backgroundColor: labelBg, color: labelColor }}>
+                  {showFeedback && isCorrectOption ? '✓' : showFeedback && isSelected && !isCorrectOption ? '✗' : String.fromCharCode(65 + i)}
+                </div>
+                <span className="text-sm font-medium leading-snug" style={{ color: textColor }}>{opt}</span>
+              </button>
+            );
+          })}
         </div>
 
-        <div className="space-y-4">
-          {currentQ.options.map((opt, i) => (
-            <button
-              key={i}
-              onClick={() => handleAnswer(i)}
-              className="w-full p-6 bg-slate-900 border border-slate-800 rounded-[2rem] text-left hover:border-blue-500/50 hover:bg-blue-500/5 transition-all group flex items-center gap-4"
-            >
-              <div className="w-10 h-10 rounded-xl bg-slate-800 flex-shrink-0 flex items-center justify-center text-xs font-black group-hover:bg-blue-500/20 group-hover:text-blue-400 transition-colors uppercase">
-                {String.fromCharCode(65 + i)}
+        {/* Feedback + Next */}
+        {showFeedback && (
+          <div className="mt-4 space-y-3">
+            {currentQ.explanation && (
+              <div className="rounded-xl p-3" style={{ backgroundColor: isCorrect ? '#10b98110' : '#ef444410', border: `1px solid ${isCorrect ? '#10b98130' : '#ef444430'}` }}>
+                <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: isCorrect ? '#10b981' : '#ef4444' }}>
+                  {isCorrect ? '✅ Correct!' : '❌ Incorrect'}
+                </p>
+                <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{currentQ.explanation}</p>
               </div>
-              <span className="text-slate-300 font-medium leading-snug group-hover:text-white transition-colors">{opt}</span>
+            )}
+            {!currentQ.explanation && (
+              <div className="rounded-xl p-3 text-center" style={{ backgroundColor: isCorrect ? '#10b98110' : '#ef444410', border: `1px solid ${isCorrect ? '#10b98130' : '#ef444430'}` }}>
+                <p className="text-sm font-bold" style={{ color: isCorrect ? '#10b981' : '#ef4444' }}>
+                  {isCorrect ? '✅ Correct!' : `❌ Incorrect — Answer: ${String.fromCharCode(65 + currentQ.correctAnswer)}`}
+                </p>
+              </div>
+            )}
+            <button
+              onClick={handleNext}
+              className="w-full py-3.5 rounded-xl font-black text-xs tracking-widest text-white active:scale-95 transition-transform"
+              style={{ backgroundColor: 'var(--accent-blue)' }}
+            >
+              {isLast ? 'FINISH TEST' : 'NEXT QUESTION →'}
             </button>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
