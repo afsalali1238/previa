@@ -28,6 +28,7 @@ const PASS_THRESHOLD = 80;
 const MAX_DAILY_ATTEMPTS = 3;
 const FAIL_COOLDOWN_MINS = 30;
 const MAX_QUESTIONS_PER_DAY = 50;
+const MIN_QUESTIONS_PER_DAY = 20;
 const REVIEW_QUESTIONS_COUNT = 10;
 
 function todayStr(): string {
@@ -72,9 +73,19 @@ export const useQuizStore = create<QuizState>()(
 
         // Pick current-day questions: use all if ≤50, random 50 if more
         const dayPool = allQuestions.filter(q => q.dayId === dayId);
-        const currentQuestions = dayPool.length <= MAX_QUESTIONS_PER_DAY
-          ? shuffle(dayPool)                              // use all available, shuffled
-          : shuffle(dayPool).slice(0, MAX_QUESTIONS_PER_DAY); // random 50
+        let currentQuestions = dayPool.length <= MAX_QUESTIONS_PER_DAY
+          ? shuffle(dayPool)
+          : shuffle(dayPool).slice(0, MAX_QUESTIONS_PER_DAY);
+
+        // If fewer than 20 questions for this day, pad with random questions from other days
+        if (currentQuestions.length < MIN_QUESTIONS_PER_DAY) {
+          const currentIds = new Set(currentQuestions.map(q => q.id));
+          const pastIds = new Set(pastQuestions.map(q => q.id));
+          const filler = shuffle(
+            allQuestions.filter(q => q.dayId !== dayId && !currentIds.has(q.id) && !pastIds.has(q.id))
+          ).slice(0, MIN_QUESTIONS_PER_DAY - currentQuestions.length);
+          currentQuestions = [...currentQuestions, ...filler];
+        }
 
         // Combine and shuffle everything together for a truly random order
         const combined = shuffle([...pastQuestions, ...currentQuestions]);
