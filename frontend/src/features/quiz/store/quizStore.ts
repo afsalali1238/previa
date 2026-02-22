@@ -27,9 +27,21 @@ interface QuizState {
 const PASS_THRESHOLD = 80;
 const MAX_DAILY_ATTEMPTS = 3;
 const FAIL_COOLDOWN_MINS = 30;
+const MAX_QUESTIONS_PER_DAY = 50;
+const REVIEW_QUESTIONS_COUNT = 10;
 
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+}
+
+/** Fisher-Yates shuffle — unbiased random reorder */
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
 export const useQuizStore = create<QuizState>()(
@@ -53,43 +65,25 @@ export const useQuizStore = create<QuizState>()(
       },
 
       startQuiz: (dayId, allQuestions) => {
-        // Note: cooldowns and daily limits are tracked for UI notifications
-        // but do NOT block the user from retesting
+        // Pick up to 10 random review questions from earlier days
+        const pastQuestions = shuffle(
+          allQuestions.filter(q => q.dayId < dayId)
+        ).slice(0, REVIEW_QUESTIONS_COUNT);
 
-        // Build quiz: 10 review + 50 current
-        const pastQuestions = allQuestions
-          .filter(q => q.dayId < dayId)
-          .sort(() => 0.5 - Math.random())
-          .slice(0, 10);
+        // Pick current-day questions: use all if ≤50, random 50 if more
+        const dayPool = allQuestions.filter(q => q.dayId === dayId);
+        const currentQuestions = dayPool.length <= MAX_QUESTIONS_PER_DAY
+          ? shuffle(dayPool)                              // use all available, shuffled
+          : shuffle(dayPool).slice(0, MAX_QUESTIONS_PER_DAY); // random 50
 
-        const currentQuestions = allQuestions
-          .filter(q => q.dayId === dayId)
-          .sort(() => 0.5 - Math.random())
-          .slice(0, 50);
+        // Combine and shuffle everything together for a truly random order
+        const combined = shuffle([...pastQuestions, ...currentQuestions]);
 
-        if (currentQuestions.length === 0 && dayId > 0) {
-          set({
-            questions: pastQuestions.concat(
-              Array.from({ length: 50 }, (_, i) => ({
-                id: `mock-${dayId}-${i}`,
-                question: `Daily Topic Question ${i + 1} for Day ${dayId}?`,
-                options: ['Option A', 'Option B', 'Option C', 'Option D'],
-                correctAnswer: 0,
-                explanation: 'Placeholder',
-                topic: 'General',
-                dayId
-              }))
-            ),
-            currentIndex: 0,
-            answers: [],
-          });
-        } else {
-          set({
-            questions: [...pastQuestions, ...currentQuestions],
-            currentIndex: 0,
-            answers: [],
-          });
-        }
+        set({
+          questions: combined,
+          currentIndex: 0,
+          answers: [],
+        });
       },
 
       submitAnswer: (answerIndex) => set((state) => ({
