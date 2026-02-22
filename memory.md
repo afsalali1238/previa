@@ -1,5 +1,18 @@
 # Development Memory Log
 
+## [2026-02-22] - UI/UX Polish, Quiz Timers, and Banners
+### Context
+User requested integration of completed features (Battle, Chat), UI fixes (Calendar layout, Default Light Theme), new tracking metrics in the Quiz (Timer, Avg Time), and marketing banners.
+### Decision
+Fleshed out existing component wrappers to render the actual features, injected a global timer accumulator for the quiz, swapped the default CSS variable behavior, and hardcoded `href` banners for WhatsApp redirects.
+### Implementation
+- **Dashboard**: Adjusted grid to 7-columns, instantiated `BattleArena` and `ChatPage` components.
+- **Theme**: Modified `:root` variables in `index.css` to render Light mode by default, swapped `themeStore` default.
+- **QuizEngine**: Added `timeSpent` interval and `totalTimeSpent` accumulator for the result statistics.
+- **Landing Page/Dashboard**: Inserted styled WhatsApp redirect (`wa.me`) banners for Data Flow support.
+
+---
+
 ## [2026-02-22] - Day Topic Visibility & Build Fix
 ### Context
 Users couldn't see topics for locked days — tapping was blocked. Also, an unused variable caused Vercel build failure.

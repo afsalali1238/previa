@@ -33,6 +33,7 @@
 * **Cooldown**: 30-minute wait between failed attempts.
 * **Pass mark**: 80% required to complete a day.
 * **Scoring**: Hero Credits awarded on pass (+10 HC).
+* **Metrics**: Constant timer (flags >90s per question), displays average time/question on results.
 
 ### 2.4 Gamification
 * **Hero Credits (HC)**: Earned by passing quizzes, winning battles.
@@ -50,7 +51,7 @@
 * Threaded format with mock data.
 
 ### 2.7 Settings & Theme
-* **Dark/Light mode** toggle (persisted in localStorage).
+* **Dark/Light mode** toggle (defaults to Light Mode, persisted in localStorage).
 * **Sign out** functionality.
 
 ---

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuizStore } from './store/quizStore';
 import { useProviaStore } from '../roadmap/store/proviaStore';
+import { CheckCircle, XCircle, Trophy, Clock } from 'lucide-react';
 
 export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ dayId, onClose }) => {
   const { questions, currentIndex, submitAnswer, finishQuiz } = useQuizStore();
@@ -55,8 +56,8 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 text-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
         <div className="max-w-sm w-full space-y-6">
-          <div className="text-6xl mb-4">
-            {result.passed ? '🎉' : '⏳'}
+          <div className="flex justify-center mb-4 text-6xl">
+            {result.passed ? <Trophy className="w-16 h-16 text-amber-500" /> : <Clock className="w-16 h-16 text-blue-500" />}
           </div>
           <h2 className="text-3xl font-black tracking-tighter italic" style={{ color: 'var(--text-primary)' }}>
             {result.passed ? 'MASTERY ACHIEVED!' : 'STUDY REQUIRED'}
@@ -194,16 +195,18 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
           <div className="mt-4 space-y-3">
             {currentQ.explanation && (
               <div className="rounded-xl p-3" style={{ backgroundColor: isCorrect ? '#10b98110' : '#ef444410', border: `1px solid ${isCorrect ? '#10b98130' : '#ef444430'}` }}>
-                <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: isCorrect ? '#10b981' : '#ef4444' }}>
-                  {isCorrect ? '✅ Correct!' : '❌ Incorrect'}
+                <p className="flex justify-center items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: isCorrect ? '#10b981' : '#ef4444' }}>
+                  {isCorrect ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                  {isCorrect ? 'Correct!' : 'Incorrect'}
                 </p>
                 <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{currentQ.explanation}</p>
               </div>
             )}
             {!currentQ.explanation && (
               <div className="rounded-xl p-3 text-center" style={{ backgroundColor: isCorrect ? '#10b98110' : '#ef444410', border: `1px solid ${isCorrect ? '#10b98130' : '#ef444430'}` }}>
-                <p className="text-sm font-bold" style={{ color: isCorrect ? '#10b981' : '#ef4444' }}>
-                  {isCorrect ? '✅ Correct!' : `❌ Incorrect — Answer: ${String.fromCharCode(65 + currentQ.correctAnswer)}`}
+                <p className="flex justify-center items-center gap-1.5 text-sm font-bold" style={{ color: isCorrect ? '#10b981' : '#ef4444' }}>
+                  {isCorrect ? <CheckCircle className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
+                  {isCorrect ? 'Correct!' : `Incorrect — Answer: ${String.fromCharCode(65 + currentQ.correctAnswer)}`}
                 </p>
               </div>
             )}

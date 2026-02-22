@@ -9,6 +9,7 @@ import rawQuestions from '../features/questions/data/final_questionnaire_data.js
 import { BattleArena } from '../features/battle/pages/BattleArena';
 import { ChatPage } from '../features/battle/pages/ChatPage';
 import type { Opponent } from '../features/battle/data/battle.data';
+import { Gem, Flame, CheckCircle2, Flag, Target, Zap, Crown, Swords, MessageCircle, Home, ClipboardList, BookOpen, Sun, Moon, LogOut } from 'lucide-react';
 
 // Map raw JSON to Question interface
 const ALL_QUESTIONS: Question[] = (rawQuestions as Array<{ day: number; text: string; options: string[]; correctAnswer: number; explanation: string; category: string }>).map((q, i) => ({
@@ -26,11 +27,11 @@ const WORLD_COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ef4444", "#0
 const WORLD_NAMES = ["Foundation", "The Engine", "The Lab", "Clinical Mastery", "Toxicology & Safety", "Advanced Pharmaco", "Final Boss"];
 
 const MILESTONE_TESTS = [
-  { id: 'mt-10', title: 'Checkpoint 1', subtitle: 'Days 1–10 Review', requiredDay: 10, icon: '🏁', color: '#3b82f6', dayRange: [1, 10] },
-  { id: 'mt-20', title: 'Checkpoint 2', subtitle: 'Days 11–20 Review', requiredDay: 20, icon: '🎯', color: '#10b981', dayRange: [11, 20] },
-  { id: 'mt-30', title: 'Checkpoint 3', subtitle: 'Days 21–30 Review', requiredDay: 30, icon: '⚡', color: '#f59e0b', dayRange: [21, 30] },
-  { id: 'mt-40', title: 'Checkpoint 4', subtitle: 'Days 31–40 Review', requiredDay: 40, icon: '🔥', color: '#8b5cf6', dayRange: [31, 40] },
-  { id: 'mt-45', title: 'Full Mock Exam', subtitle: 'All 45 Days — Final Boss', requiredDay: 45, icon: '👑', color: '#f43f5e', dayRange: [1, 45] },
+  { id: 'mt-10', title: 'Checkpoint 1', subtitle: 'Days 1–10 Review', requiredDay: 10, icon: <Flag className="w-6 h-6" />, color: '#3b82f6', dayRange: [1, 10] },
+  { id: 'mt-20', title: 'Checkpoint 2', subtitle: 'Days 11–20 Review', requiredDay: 20, icon: <Target className="w-6 h-6" />, color: '#10b981', dayRange: [11, 20] },
+  { id: 'mt-30', title: 'Checkpoint 3', subtitle: 'Days 21–30 Review', requiredDay: 30, icon: <Zap className="w-6 h-6" />, color: '#f59e0b', dayRange: [21, 30] },
+  { id: 'mt-40', title: 'Checkpoint 4', subtitle: 'Days 31–40 Review', requiredDay: 40, icon: <Flame className="w-6 h-6" />, color: '#8b5cf6', dayRange: [31, 40] },
+  { id: 'mt-45', title: 'Full Mock Exam', subtitle: 'All 45 Days — Final Boss', requiredDay: 45, icon: <Crown className="w-6 h-6" />, color: '#f43f5e', dayRange: [1, 45] },
 ];
 
 /* ═══ HOME TAB ═══ */
@@ -65,13 +66,13 @@ const HomeTab: React.FC<{ onStartQuiz: (dayId: number) => void }> = ({ onStartQu
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { icon: '💎', value: heroCredits, label: 'Hero Credits', color: '#f59e0b' },
-          { icon: '🔥', value: streak, label: 'Day Streak', color: '#f97316' },
-          { icon: '✅', value: completedDays, label: 'Days Done', color: '#10b981' },
+          { icon: <Gem className="w-6 h-6 mx-auto mb-1" />, value: heroCredits, label: 'Hero Credits', color: '#f59e0b' },
+          { icon: <Flame className="w-6 h-6 mx-auto mb-1" />, value: streak, label: 'Day Streak', color: '#f97316' },
+          { icon: <CheckCircle2 className="w-6 h-6 mx-auto mb-1" />, value: completedDays, label: 'Days Done', color: '#10b981' },
         ].map((s, i) => (
           <div key={i} className="rounded-xl p-3 text-center" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
-            <span className="text-xl">{s.icon}</span>
-            <p className="text-lg font-black mt-1" style={{ color: s.color }}>{s.value}</p>
+            <div style={{ color: s.color }}>{s.icon}</div>
+            <p className="text-lg font-black" style={{ color: s.color }}>{s.value}</p>
             <p className="text-[9px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{s.label}</p>
           </div>
         ))}
@@ -94,7 +95,7 @@ const HomeTab: React.FC<{ onStartQuiz: (dayId: number) => void }> = ({ onStartQu
         className="block rounded-2xl bg-gradient-to-r from-blue-600 to-emerald-600 text-white text-center py-4 px-4 shadow-lg hover:opacity-95 transition-opacity"
       >
         <div className="flex flex-col items-center justify-center gap-1 cursor-pointer">
-          <span className="text-2xl mb-1">💬</span>
+          <MessageCircle className="w-6 h-6 mb-1" />
           <span className="text-sm font-black tracking-wide">Need Data Flow Assistance?</span>
           <span className="text-[10px] font-bold tracking-widest uppercase opacity-90 mt-1">Tap to chat on WhatsApp</span>
         </div>
@@ -244,7 +245,7 @@ const RoadmapGrid: React.FC<{ onDayClick?: (dayId: number) => void }> = ({ onDay
       {showStudyConfirm && selected && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center px-5" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
           <div className="w-full max-w-sm rounded-2xl p-6 text-center" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
-            <span className="text-4xl">📖</span>
+            <BookOpen className="w-10 h-10 mx-auto text-blue-500" />
             <h3 className="text-lg font-black mt-3" style={{ color: 'var(--text-primary)' }}>Ready for the test?</h3>
             <p className="text-sm mt-2 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               Have you studied <strong style={{ color: 'var(--text-primary)' }}>{selected.title}</strong> and all its sub-topics?
@@ -383,7 +384,7 @@ const BattleTab: React.FC = () => {
   return (
     <div className="px-4 pt-5 pb-8 space-y-5">
       <div className="text-center py-4">
-        <span className="text-4xl">⚔️</span>
+        <Swords className="w-10 h-10 mx-auto text-red-500" />
         <h2 className="text-xl font-black mt-2" style={{ color: 'var(--text-primary)' }}>Battle Arena</h2>
         <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>Challenge opponents and earn Hero Credits</p>
       </div>
@@ -454,7 +455,7 @@ const SettingsPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         <div className="space-y-3">
           <div className="flex items-center justify-between rounded-xl p-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
             <div className="flex items-center gap-3">
-              <span className="text-xl">{mode === 'dark' ? '🌙' : '☀️'}</span>
+              {mode === 'dark' ? <Moon className="w-5 h-5 text-blue-400" /> : <Sun className="w-5 h-5 text-amber-500" />}
               <div>
                 <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Appearance</p>
                 <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{mode === 'dark' ? 'Dark Mode' : 'Light Mode'}</p>
@@ -465,7 +466,7 @@ const SettingsPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </button>
           </div>
           <button onClick={logout} className="w-full flex items-center gap-3 rounded-xl p-4 active:scale-95" style={{ backgroundColor: '#ef444415', border: '1px solid #ef444430' }}>
-            <span className="text-xl">🚪</span>
+            <LogOut className="w-5 h-5 text-red-500" />
             <p className="text-sm font-bold" style={{ color: '#ef4444' }}>Sign Out</p>
           </button>
         </div>
@@ -479,11 +480,11 @@ const SettingsPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 /*                MAIN DASHBOARD                   */
 /* ═══════════════════════════════════════════════ */
 type TabId = 'home' | 'tests' | 'battle' | 'discussions';
-const TAB_CONFIG: { id: TabId; label: string; icon: string }[] = [
-  { id: 'home', label: 'Home', icon: '🏠' },
-  { id: 'tests', label: 'Tests', icon: '📋' },
-  { id: 'battle', label: 'Battle', icon: '⚔️' },
-  { id: 'discussions', label: 'Chat', icon: '💬' },
+const TAB_CONFIG: { id: TabId; label: string; icon: React.ReactNode }[] = [
+  { id: 'home', label: 'Home', icon: <Home className="w-6 h-6" /> },
+  { id: 'tests', label: 'Tests', icon: <ClipboardList className="w-6 h-6" /> },
+  { id: 'battle', label: 'Battle', icon: <Swords className="w-6 h-6" /> },
+  { id: 'discussions', label: 'Chat', icon: <MessageCircle className="w-6 h-6" /> },
 ];
 
 export const Dashboard: React.FC = () => {
@@ -545,9 +546,11 @@ export const Dashboard: React.FC = () => {
         <div className="flex items-center justify-around max-w-lg mx-auto py-1.5">
           {TAB_CONFIG.map((t) => (
             <button key={t.id} onClick={() => setTab(t.id)} className="flex flex-col items-center gap-0.5 py-2 px-5 rounded-xl min-w-[64px] active:scale-90 transition-transform">
-              <span className={`text-xl ${tab === t.id ? 'scale-110' : ''}`}>{t.icon}</span>
-              <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: tab === t.id ? 'var(--accent-blue)' : 'var(--text-muted)' }}>{t.label}</span>
-              {tab === t.id && <div className="w-1 h-1 rounded-full" style={{ backgroundColor: 'var(--accent-blue)' }} />}
+              <span className={`transition-all duration-300 ${tab === t.id ? 'scale-110 text-blue-500' : 'text-slate-400'}`}>
+                {t.icon}
+              </span>
+              <span className="text-[9px] font-bold uppercase tracking-wider mt-1" style={{ color: tab === t.id ? 'var(--accent-blue)' : 'var(--text-muted)' }}>{t.label}</span>
+              {tab === t.id && <div className="w-1 h-1 rounded-full mt-1" style={{ backgroundColor: 'var(--accent-blue)' }} />}
             </button>
           ))}
         </div>

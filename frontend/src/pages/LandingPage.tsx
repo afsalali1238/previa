@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAuthStore } from '../features/auth/store/authStore';
+import { MessageCircle, Rocket, BookOpen, Ghost, Swords } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
   const { login } = useAuthStore();
@@ -28,15 +29,15 @@ export const LandingPage: React.FC = () => {
         className="block bg-gradient-to-r from-blue-600 to-emerald-600 text-white text-center py-3 px-4 shadow-lg hover:opacity-95 transition-opacity"
       >
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 cursor-pointer">
-          <span className="text-xl">💬</span>
+          <MessageCircle className="w-5 h-5 mb-0.5" />
           <span className="text-sm font-bold tracking-wide">Need Data Flow Assistance? Click here to chat with us on WhatsApp!</span>
         </div>
       </a>
 
       {/* Hero Section */}
       <header className="px-5 py-16 sm:py-20 text-center max-w-4xl mx-auto space-y-6">
-        <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full text-[10px] font-black tracking-widest text-blue-500 uppercase">
-          🚀 45-Day Pharmacy Mastery
+        <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 px-3 py-1.5 rounded-full text-[10px] font-black tracking-widest text-blue-500 uppercase">
+          <Rocket className="w-3.5 h-3.5" /> 45-Day Pharmacy Mastery
         </div>
         <h1 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tighter leading-[0.9] italic">
           THE ULTIMATE<br />GULF EXAM<br />
@@ -84,9 +85,9 @@ export const LandingPage: React.FC = () => {
       {/* Features Grid */}
       <section className="px-5 py-12 max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
-          { title: "50 Qs Per Topic", desc: "Intense daily focus sessions. 50 high-yield questions every day to ensure total syllabus coverage.", icon: "📚" },
-          { title: "The Ghost Rule", desc: "10 review questions from previous worlds daily to combat memory decay automatically.", icon: "👻" },
-          { title: "Battle Duels", desc: "Challenge peers in battles to earn Hero Credits and climb the leaderboard.", icon: "⚔️" }
+          { title: "50 Qs Per Topic", desc: "Intense daily focus sessions. 50 high-yield questions every day to ensure total syllabus coverage.", icon: <BookOpen className="w-8 h-8" /> },
+          { title: "The Ghost Rule", desc: "10 review questions from previous worlds daily to combat memory decay automatically.", icon: <Ghost className="w-8 h-8" /> },
+          { title: "Battle Duels", desc: "Challenge peers in battles to earn Hero Credits and climb the leaderboard.", icon: <Swords className="w-8 h-8" /> }
         ].map((feat, i) => (
           <div key={i} className="border p-6 rounded-3xl transition-all group hover:border-blue-500/30" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
             <div className="text-3xl mb-4 group-hover:scale-110 transition-transform inline-block">{feat.icon}</div>

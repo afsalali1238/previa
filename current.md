@@ -18,6 +18,9 @@
 ### Completed
 - ✅ **Day Topic Visibility**: All 45 days are now tappable (including locked), showing main topic, sub-topics, and lock status.
 - ✅ **Build Fix**: Removed unused `roadmap` variable in Dashboard.tsx (TS6133).
+- ✅ **Quiz Timer & Stats**: Added constant quiz timer flag and "average time per question" stats.
+- ✅ **UI Polish & Integration**: Integrated BattleArena transitions, active ChatPage discussions, and 7-column Calendar layout.
+- ✅ **Theme & Marketing**: Set Light theme as default. Added WhatsApp Data Flow banners to Landing Page and Dashboard.
 - ✅ **Vercel Deploy**: Production deploy successful.
 - ✅ **Documentation Update**: Updated all project docs to reflect current state.
 
