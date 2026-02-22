@@ -6,6 +6,9 @@ import { useThemeStore } from '../features/theme/themeStore';
 import type { Question } from '../features/quiz/store/quizStore';
 import { QuizEngine } from '../features/quiz/QuizEngine';
 import rawQuestions from '../features/questions/data/final_questionnaire_data.json';
+import { BattleArena } from '../features/battle/pages/BattleArena';
+import { ChatPage } from '../features/battle/pages/ChatPage';
+import type { Opponent } from '../features/battle/data/battle.data';
 
 // Map raw JSON to Question interface
 const ALL_QUESTIONS: Question[] = (rawQuestions as Array<{ day: number; text: string; options: string[]; correctAnswer: number; explanation: string; category: string }>).map((q, i) => ({
@@ -28,35 +31,6 @@ const MILESTONE_TESTS = [
   { id: 'mt-30', title: 'Checkpoint 3', subtitle: 'Days 21–30 Review', requiredDay: 30, icon: '⚡', color: '#f59e0b', dayRange: [21, 30] },
   { id: 'mt-40', title: 'Checkpoint 4', subtitle: 'Days 31–40 Review', requiredDay: 40, icon: '🔥', color: '#8b5cf6', dayRange: [31, 40] },
   { id: 'mt-45', title: 'Full Mock Exam', subtitle: 'All 45 Days — Final Boss', requiredDay: 45, icon: '👑', color: '#f43f5e', dayRange: [1, 45] },
-];
-
-const DISCUSSION_CATEGORIES = [
-  {
-    id: 'materials', title: 'Study Materials', icon: '📚', color: '#3b82f6', threads: [
-      { title: 'Best resources for Adrenergic Pharmacology?', user: 'Dr. Fatima', replies: 12, time: '2h ago' },
-      { title: 'Diuretics video notes — sharing my summary', user: 'PharmAli', replies: 8, time: '5h ago' },
-      { title: 'CVS pharmacology cheat sheet (PDF)', user: 'Sara_RX', replies: 23, time: '1d ago' },
-    ]
-  },
-  {
-    id: 'doubts', title: 'Doubts & Questions', icon: '❓', color: '#f59e0b', threads: [
-      { title: 'Suspension vs Emulsion — key differences?', user: 'RxStudent', replies: 15, time: '3h ago' },
-      { title: 'How to calculate milli-equivalence?', user: 'MedNerd99', replies: 6, time: '6h ago' },
-      { title: 'α1 vs α2 receptor subtypes confusion', user: 'PharmQueen', replies: 19, time: '1d ago' },
-    ]
-  },
-  {
-    id: 'tips', title: 'Exam Tips & Strategy', icon: '💡', color: '#10b981', threads: [
-      { title: 'My 45-day study plan that worked', user: 'Dr. Faisal', replies: 34, time: '4h ago' },
-      { title: 'How to handle exam anxiety on test day', user: 'GulfExamPrep', replies: 11, time: '12h ago' },
-    ]
-  },
-  {
-    id: 'general', title: 'General Chat', icon: '💬', color: '#8b5cf6', threads: [
-      { title: "Day 16 gang — who's studying today?", user: 'PharmAli', replies: 7, time: '1h ago' },
-      { title: 'Just passed my DHA exam! AMA', user: 'Dr. Noor', replies: 45, time: '3d ago' },
-    ]
-  },
 ];
 
 /* ═══ HOME TAB ═══ */
@@ -111,6 +85,20 @@ const HomeTab: React.FC<{ onStartQuiz: (dayId: number) => void }> = ({ onStartQu
         </div>
         <RoadmapGrid onDayClick={onStartQuiz} />
       </div>
+
+      {/* WhatsApp Data Flow Banner */}
+      <a
+        href="https://wa.me/+919037347340"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block rounded-2xl bg-gradient-to-r from-blue-600 to-emerald-600 text-white text-center py-4 px-4 shadow-lg hover:opacity-95 transition-opacity"
+      >
+        <div className="flex flex-col items-center justify-center gap-1 cursor-pointer">
+          <span className="text-2xl mb-1">💬</span>
+          <span className="text-sm font-black tracking-wide">Need Data Flow Assistance?</span>
+          <span className="text-[10px] font-bold tracking-widest uppercase opacity-90 mt-1">Tap to chat on WhatsApp</span>
+        </div>
+      </a>
     </div>
   );
 };
@@ -139,7 +127,7 @@ const RoadmapGrid: React.FC<{ onDayClick?: (dayId: number) => void }> = ({ onDay
 
   return (
     <>
-      <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(9, 1fr)' }}>
+      <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(7, 1fr)' }}>
         {roadmap.map((day) => {
           const isCompleted = day.completed;
           const isCurrent = day.unlocked && !day.completed;
@@ -340,11 +328,16 @@ const BattleTab: React.FC = () => {
   const { heroCredits } = useProviaStore();
   const [searchId, setSearchId] = useState('');
   const [matchStatus, setMatchStatus] = useState<'idle' | 'searching' | 'found'>('idle');
-  const [opponent, setOpponent] = useState<{ name: string; level: number } | null>(null);
+  const [opponent, setOpponent] = useState<Opponent | null>(null);
+  const [activeBattle, setActiveBattle] = useState(false);
 
-  const FAKE_OPPONENTS = [
-    { name: 'Dr. Sarah', level: 5 }, { name: 'PharmAli', level: 12 }, { name: 'RxMaster', level: 8 },
-    { name: 'Dr. Fatima', level: 15 }, { name: 'MedNerd99', level: 3 }, { name: 'GulfPrep', level: 9 },
+  const FAKE_OPPONENTS: Opponent[] = [
+    { id: '1', name: 'Dr. Sarah', level: 5, avatar: '👩‍⚕️', winRate: 40, authority: 'DHA', status: 'online' },
+    { id: '2', name: 'PharmAli', level: 12, avatar: '👨‍⚕️', winRate: 60, authority: 'MOH', status: 'online' },
+    { id: '3', name: 'RxMaster', level: 8, avatar: '🦸‍♂️', winRate: 50, authority: 'HAAD', status: 'busy' },
+    { id: '4', name: 'Dr. Fatima', level: 15, avatar: '🧕', winRate: 75, authority: 'DHA', status: 'online' },
+    { id: '5', name: 'MedNerd99', level: 3, avatar: '🤓', winRate: 30, authority: 'MOH', status: 'offline' },
+    { id: '6', name: 'GulfPrep', level: 9, avatar: '👨‍🎓', winRate: 55, authority: 'HAAD', status: 'online' },
   ];
 
   const handleRandomMatch = () => {
@@ -361,10 +354,31 @@ const BattleTab: React.FC = () => {
     setMatchStatus('searching');
     setOpponent(null);
     setTimeout(() => {
-      setOpponent({ name: `Player #${searchId}`, level: Math.floor(Math.random() * 15) + 1 });
+      setOpponent({ id: searchId, name: `Player #${searchId}`, level: Math.floor(Math.random() * 15) + 1, avatar: '👤', winRate: 50, authority: 'DHA', status: 'online' });
       setMatchStatus('found');
     }, 1500);
   };
+
+  const startBattle = () => setActiveBattle(true);
+
+  if (activeBattle && opponent) {
+    return (
+      <div className="fixed inset-0 z-[100]">
+        <BattleArena
+          opponent={opponent}
+          onComplete={() => {
+            setActiveBattle(false);
+            setMatchStatus('idle');
+            setOpponent(null);
+            // possibly add xp logic here if needed
+          }}
+          onBack={() => {
+            setActiveBattle(false);
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 pt-5 pb-8 space-y-5">
@@ -405,12 +419,12 @@ const BattleTab: React.FC = () => {
       {matchStatus === 'found' && opponent && (
         <div className="rounded-2xl p-5 text-center" style={{ backgroundColor: 'var(--bg-secondary)', border: `1px solid var(--accent-green)` }}>
           <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--accent-green)' }}>Opponent Found!</p>
-          <div className="w-16 h-16 rounded-full mx-auto mt-3 flex items-center justify-center text-2xl font-black" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--accent-blue)' }}>{opponent.name.charAt(0)}</div>
+          <div className="w-16 h-16 rounded-full mx-auto mt-3 flex items-center justify-center text-2xl font-black" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--accent-blue)' }}>{opponent.avatar || opponent.name.charAt(0)}</div>
           <p className="text-lg font-black mt-2" style={{ color: 'var(--text-primary)' }}>{opponent.name}</p>
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Level {opponent.level}</p>
           <div className="flex gap-3 mt-4">
             <button onClick={() => { setMatchStatus('idle'); setOpponent(null); }} className="flex-1 py-3.5 rounded-xl text-xs font-black tracking-widest active:scale-95" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-secondary)' }}>CANCEL</button>
-            <button className="flex-1 py-3.5 rounded-xl text-xs font-black tracking-widest text-white active:scale-95" style={{ backgroundColor: '#ef4444' }}>⚔️ BATTLE!</button>
+            <button onClick={startBattle} className="flex-1 py-3.5 rounded-xl text-xs font-black tracking-widest text-white active:scale-95" style={{ backgroundColor: '#ef4444' }}>⚔️ BATTLE!</button>
           </div>
         </div>
       )}
@@ -419,48 +433,10 @@ const BattleTab: React.FC = () => {
 };
 
 /* ═══ DISCUSSIONS TAB ═══ */
-const DiscussionsTab: React.FC = () => {
-  const [expandedCat, setExpandedCat] = useState<string | null>('materials');
-
+const DiscussionsTab: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   return (
-    <div className="px-4 pt-5 pb-8 space-y-4">
-      <div className="text-center py-2">
-        <h2 className="text-xl font-black" style={{ color: 'var(--text-primary)' }}>💬 Discussions</h2>
-        <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>Learn together, pass together</p>
-      </div>
-
-      {DISCUSSION_CATEGORIES.map((cat) => {
-        const isOpen = expandedCat === cat.id;
-        return (
-          <div key={cat.id} className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
-            <button onClick={() => setExpandedCat(isOpen ? null : cat.id)} className="w-full flex items-center gap-3 p-4 text-left">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0" style={{ backgroundColor: cat.color + '15' }}>{cat.icon}</div>
-              <div className="flex-1">
-                <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{cat.title}</p>
-                <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{cat.threads.length} threads</p>
-              </div>
-              <svg className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-            </button>
-            {isOpen && (
-              <div className="px-4 pb-4 space-y-2">
-                {cat.threads.map((thread, tIdx) => (
-                  <div key={tIdx} className="rounded-xl p-3" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
-                    <p className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>{thread.title}</p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-[10px] font-medium" style={{ color: cat.color }}>{thread.user}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>💬 {thread.replies}</span>
-                        <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{thread.time}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                <button className="w-full py-3 rounded-xl text-[10px] font-bold tracking-widest active:scale-95" style={{ backgroundColor: 'var(--bg-primary)', color: cat.color, border: `1px dashed ${cat.color}40` }}>+ NEW THREAD</button>
-              </div>
-            )}
-          </div>
-        );
-      })}
+    <div className="pb-8">
+      <ChatPage userName="You" onBack={onBack} />
     </div>
   );
 };
@@ -561,7 +537,7 @@ export const Dashboard: React.FC = () => {
         {tab === 'home' && <HomeTab onStartQuiz={handleStartQuiz} />}
         {tab === 'tests' && <TestsTab onStartQuiz={handleStartQuiz} />}
         {tab === 'battle' && <BattleTab />}
-        {tab === 'discussions' && <DiscussionsTab />}
+        {tab === 'discussions' && <DiscussionsTab onBack={() => setTab('home')} />}
       </div>
 
       {/* Bottom Nav */}
