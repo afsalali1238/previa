@@ -125,7 +125,6 @@ const RoadmapGrid: React.FC<{ onDayClick?: (dayId: number) => void }> = ({ onDay
   const attemptInfo = selectedDay ? getAttemptInfo(selectedDay) : null;
 
   const handleTap = (day: typeof roadmap[0]) => {
-    if (!day.unlocked) return;
     setSelectedDay(day.id);
     setShowStudyConfirm(false);
   };
@@ -151,14 +150,14 @@ const RoadmapGrid: React.FC<{ onDayClick?: (dayId: number) => void }> = ({ onDay
             <button
               key={day.id}
               onClick={() => handleTap(day)}
-              disabled={isLocked}
-              className="aspect-square rounded-lg flex items-center justify-center text-xs font-bold"
+              className="aspect-square rounded-lg flex items-center justify-center text-xs font-bold transition-transform active:scale-90"
               style={{
                 backgroundColor: isCompleted ? '#10b981' : isCurrent ? 'var(--bg-secondary)' : 'var(--bg-card)',
                 border: isCurrent ? `2px solid ${worldColor}` : isCompleted ? 'none' : '1px solid var(--border-subtle)',
                 color: isCompleted ? 'white' : isCurrent ? 'var(--text-primary)' : 'var(--text-muted)',
-                opacity: isLocked ? 0.35 : 1,
+                opacity: isLocked ? 0.45 : 1,
                 minHeight: '34px',
+                cursor: 'pointer',
               }}
             >
               {isCompleted ? (
@@ -184,13 +183,23 @@ const RoadmapGrid: React.FC<{ onDayClick?: (dayId: number) => void }> = ({ onDay
                 </span>
                 <h3 className="text-lg font-black mt-0.5" style={{ color: 'var(--text-primary)' }}>{selected.title}</h3>
               </div>
-              {selected.completed && <span className="text-2xl">✅</span>}
+              {selected.completed ? (
+                <span className="text-2xl">✅</span>
+              ) : !selected.unlocked ? (
+                <span className="text-2xl">🔒</span>
+              ) : null}
             </div>
 
-            {/* Topics */}
+            {/* Main Topic Banner */}
+            <div className="rounded-xl p-3.5 mb-3" style={{ backgroundColor: WORLD_COLORS[(selected.worldId || 1) - 1] + '12', border: `1px solid ${WORLD_COLORS[(selected.worldId || 1) - 1]}30` }}>
+              <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: WORLD_COLORS[(selected.worldId || 1) - 1] }}>📚 Main Topic</p>
+              <p className="text-sm font-black" style={{ color: 'var(--text-primary)' }}>{selected.title}</p>
+            </div>
+
+            {/* Sub-Topics */}
             {selected.subTopics.length > 0 && (
               <div className="space-y-1.5 mb-4">
-                <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Topics to Study</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Also Covered</p>
                 {selected.subTopics.map((topic, i) => (
                   <div key={i} className="flex items-center gap-2 rounded-xl px-3 py-2.5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
                     <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: WORLD_COLORS[(selected.worldId || 1) - 1] }} />
@@ -200,8 +209,15 @@ const RoadmapGrid: React.FC<{ onDayClick?: (dayId: number) => void }> = ({ onDay
               </div>
             )}
 
-            {/* Attempt Info */}
-            {attemptInfo && (
+            {/* Locked Day Notice */}
+            {!selected.unlocked && (
+              <div className="rounded-xl p-3 mb-4 text-center" style={{ backgroundColor: '#f59e0b10', border: '1px solid #f59e0b30' }}>
+                <p className="text-xs font-bold" style={{ color: '#f59e0b' }}>🔒 Complete previous days to unlock this test</p>
+              </div>
+            )}
+
+            {/* Attempt Info — only for unlocked days */}
+            {selected.unlocked && attemptInfo && (
               <div className="rounded-xl p-3 mb-4" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
                 <div className="flex justify-between text-xs">
                   <span style={{ color: 'var(--text-muted)' }}>Attempts today</span>
@@ -226,9 +242,11 @@ const RoadmapGrid: React.FC<{ onDayClick?: (dayId: number) => void }> = ({ onDay
               <button onClick={() => setSelectedDay(null)} className="flex-1 py-3.5 rounded-xl text-xs font-black tracking-widest active:scale-95" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-secondary)' }}>
                 CLOSE
               </button>
-              <button onClick={() => setShowStudyConfirm(true)} className="flex-1 py-3.5 rounded-xl text-xs font-black tracking-widest text-white active:scale-95" style={{ backgroundColor: 'var(--accent-blue)' }}>
-                {selected.completed ? 'RETAKE TEST' : 'TAKE TEST'}
-              </button>
+              {selected.unlocked && (
+                <button onClick={() => setShowStudyConfirm(true)} className="flex-1 py-3.5 rounded-xl text-xs font-black tracking-widest text-white active:scale-95" style={{ backgroundColor: 'var(--accent-blue)' }}>
+                  {selected.completed ? 'RETAKE TEST' : 'TAKE TEST'}
+                </button>
+              )}
             </div>
           </div>
         </div>
