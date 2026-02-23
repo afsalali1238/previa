@@ -93,6 +93,85 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
 
   // ── Result Screen ──
   if (result) {
+    if (mode === 'mock') {
+      const topicsStats = questions.reduce((acc, q, i) => {
+        const topic = q.topic || 'General';
+        if (!acc[topic]) acc[topic] = { total: 0, correct: 0 };
+        acc[topic].total += 1;
+        if (answers[i] === q.correctAnswer) acc[topic].correct += 1;
+        return acc;
+      }, {} as Record<string, { total: number; correct: number }>);
+
+      const totalCorrect = Object.values(topicsStats).reduce((sum, s) => sum + s.correct, 0);
+      const totalItems = questions.length;
+
+      const confNumber = Math.floor(Math.random() * 8999999999) + 1000000000; // Fake 10 digit
+
+      return (
+        <div className="fixed inset-0 z-[100] bg-[#fafafa] flex flex-col p-4 md:p-8 overflow-y-auto font-sans">
+          <div className="max-w-3xl w-full mx-auto bg-white shadow-xl shadow-slate-200/50 p-6 md:p-12 mt-4 md:mt-10" style={{ borderTop: '4px solid #3b82f6' }}>
+            {/* Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 text-xs text-slate-800 gap-4">
+              <div>
+                <h1 className="text-sm md:text-base font-bold text-slate-900 mb-1">PROVIA Pharmacy Prometric Exam</h1>
+                <p className="text-slate-500">Day {dayId} Checkpoint / Mock</p>
+              </div>
+              <div className="text-right space-y-1 w-full md:w-auto flex flex-col items-start md:items-end">
+                <p><span className="font-semibold text-slate-600">Date of Exam:</span> {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                <p><span className="font-semibold text-slate-600">Confirmation Number:</span> {confNumber}</p>
+                <p><span className="font-semibold text-slate-600">Govt ID/ Passport:</span> P-REVIEW-MODE</p>
+                <p><span className="font-semibold text-slate-600">Exam Center:</span> 8824</p>
+              </div>
+            </div>
+
+            {/* Score & Title */}
+            <div className="text-center mb-10">
+              <h2 className="text-lg font-bold text-slate-900 mb-2">Your Exam Result = {Math.round(result.score)}%</h2>
+              <h3 className="text-base font-semibold text-slate-700">Diagnostic Information</h3>
+            </div>
+
+            {/* Table */}
+            <div className="w-full">
+              {/* Table Header */}
+              <div className="grid grid-cols-12 gap-4 pb-3 border-b-2 border-slate-800 text-xs font-bold text-slate-800">
+                <div className="col-span-8"></div>
+                <div className="col-span-2 text-center">Number of Items Correct</div>
+                <div className="col-span-2 text-center">Total Number of Items</div>
+              </div>
+
+              {/* Table Body */}
+              <div className="text-sm text-slate-700">
+                {Object.entries(topicsStats).map(([topicName, stats], i) => (
+                  <div key={i} className="grid grid-cols-12 gap-4 py-4 border-b border-slate-200 items-center">
+                    <div className="col-span-8 font-medium pr-4">{topicName}</div>
+                    <div className="col-span-2 text-center font-semibold">{stats.correct}</div>
+                    <div className="col-span-2 text-center">{stats.total}</div>
+                  </div>
+                ))}
+
+                {/* Total Row */}
+                <div className="grid grid-cols-12 gap-4 py-4 border-b-2 border-slate-800 items-center font-bold text-slate-900">
+                  <div className="col-span-8">Total</div>
+                  <div className="col-span-2 text-center">{totalCorrect}</div>
+                  <div className="col-span-2 text-center">{totalItems}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-12 flex justify-center">
+              <button
+                onClick={onClose}
+                className="px-8 py-3 bg-slate-900 text-white font-bold text-xs tracking-widest hover:bg-slate-800 transition-colors uppercase"
+              >
+                Close Report & Return
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Daily Mode Mastery Screen
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 text-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
         <div className="max-w-sm w-full space-y-6">

@@ -20,7 +20,7 @@ interface QuizState {
   cooldowns: Record<number, number>;       // dayId -> cooldown-until timestamp
   dailyAttempts: Record<number, { count: number; date: string }>; // dayId -> { count, date }
 
-  startQuiz: (dayId: number, allQuestions: Question[], options?: { mode?: 'daily' | 'mock'; dayRange?: [number, number] }) => void;
+  startQuiz: (dayId: number, allQuestions: Question[], options?: { mode?: 'daily' | 'mock'; dayRange?: [number, number]; questionCount?: number }) => void;
   submitAnswer: (answerIndex: number) => void;
   setAnswer: (qIndex: number, answerIndex: number) => void;
   toggleBookmark: (qIndex: number) => void;
@@ -89,8 +89,8 @@ export const useQuizStore = create<QuizState>()(
         if (mode === 'mock' && options.dayRange) {
           const [start, end] = options.dayRange;
           const pool = uniqueQuestions.filter(q => q.dayId >= start && q.dayId <= end);
-          // E.g., maximum 100 questions for mock exams
-          combined = shuffle(pool).slice(0, 100);
+          // Limit to specific count or 100 for mock exams
+          combined = shuffle(pool).slice(0, options.questionCount || 100);
         } else {
           // Pick up to 10 random review questions from earlier days
           const pastQuestions = shuffle(
