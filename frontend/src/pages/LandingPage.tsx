@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuthStore } from '../features/auth/store/authStore';
-import { MessageCircle, Rocket, BookOpen, Ghost, Swords } from 'lucide-react';
+import { MessageCircle, Rocket, BookOpen, Ghost, Swords, Smartphone, Share, MoreVertical } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
   const { login } = useAuthStore();
@@ -95,6 +95,37 @@ export const LandingPage: React.FC = () => {
             <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{feat.desc}</p>
           </div>
         ))}
+      </section>
+
+      {/* Install as App */}
+      <section className="px-5 py-12 max-w-xl mx-auto text-center">
+        <div className="rounded-3xl p-6 sm:p-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+          <Smartphone className="w-10 h-10 mx-auto mb-4 text-blue-500" />
+          <h2 className="text-lg font-black italic tracking-tight mb-1" style={{ color: 'var(--text-primary)' }}>Use PROVIA as an App</h2>
+          <p className="text-xs mb-5" style={{ color: 'var(--text-muted)' }}>Add to your Home Screen for a full-screen, app-like experience.</p>
+
+          <div className="space-y-4 text-left">
+            {/* iOS */}
+            <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+              <p className="text-[10px] font-black uppercase tracking-widest mb-2 text-blue-500">iPhone / iPad (Safari)</p>
+              <ol className="text-xs leading-relaxed space-y-1" style={{ color: 'var(--text-secondary)' }}>
+                <li className="flex items-start gap-2"><span className="font-bold" style={{ color: 'var(--text-primary)' }}>1.</span> Tap the <Share className="w-3.5 h-3.5 inline-block mx-0.5 -mt-0.5" /> <strong>Share</strong> button at the bottom of Safari</li>
+                <li className="flex items-start gap-2"><span className="font-bold" style={{ color: 'var(--text-primary)' }}>2.</span> Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+                <li className="flex items-start gap-2"><span className="font-bold" style={{ color: 'var(--text-primary)' }}>3.</span> Tap <strong>"Add"</strong> — Done!</li>
+              </ol>
+            </div>
+
+            {/* Android */}
+            <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+              <p className="text-[10px] font-black uppercase tracking-widest mb-2 text-emerald-500">Android (Chrome)</p>
+              <ol className="text-xs leading-relaxed space-y-1" style={{ color: 'var(--text-secondary)' }}>
+                <li className="flex items-start gap-2"><span className="font-bold" style={{ color: 'var(--text-primary)' }}>1.</span> Tap the <MoreVertical className="w-3.5 h-3.5 inline-block mx-0.5 -mt-0.5" /> <strong>menu</strong> (three dots) in Chrome</li>
+                <li className="flex items-start gap-2"><span className="font-bold" style={{ color: 'var(--text-primary)' }}>2.</span> Tap <strong>"Add to Home screen"</strong></li>
+                <li className="flex items-start gap-2"><span className="font-bold" style={{ color: 'var(--text-primary)' }}>3.</span> Tap <strong>"Add"</strong> — Done!</li>
+              </ol>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Footer / Authorities */}
