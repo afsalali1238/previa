@@ -14,12 +14,6 @@ export const LandingPage: React.FC = () => {
           <img src="/logo-provia.png" alt="Provia" className="w-8 h-8 rounded-lg object-contain logo-dark-bg" />
           <span className="text-xl font-black tracking-tighter italic bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">PROVIA</span>
         </div>
-        <Link
-          to="/how-it-works"
-          className="text-xs font-bold hover:text-blue-400 transition-colors uppercase tracking-widest"
-        >
-          How It Works
-        </Link>
       </nav>
 
       {/* WhatsApp Data Flow Banner */}
