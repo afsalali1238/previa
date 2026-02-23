@@ -66,29 +66,41 @@ export const useQuizStore = create<QuizState>()(
       },
 
       startQuiz: (dayId, allQuestions) => {
+        // Deduplicate questions by their text to avoid repeats
+        const seen = new Set<string>();
+        const uniqueQuestions = allQuestions.filter(q => {
+          const key = q.question.trim().toLowerCase();
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+
         // Pick up to 10 random review questions from earlier days
         const pastQuestions = shuffle(
-          allQuestions.filter(q => q.dayId < dayId)
+          uniqueQuestions.filter(q => q.dayId < dayId)
         ).slice(0, REVIEW_QUESTIONS_COUNT);
 
         // Pick current-day questions: use all if ≤50, random 50 if more
-        const dayPool = allQuestions.filter(q => q.dayId === dayId);
+        const dayPool = uniqueQuestions.filter(q => q.dayId === dayId);
         let currentQuestions = dayPool.length <= MAX_QUESTIONS_PER_DAY
           ? shuffle(dayPool)
           : shuffle(dayPool).slice(0, MAX_QUESTIONS_PER_DAY);
 
         // If fewer than 20 questions for this day, pad with random questions from other days
         if (currentQuestions.length < MIN_QUESTIONS_PER_DAY) {
-          const currentIds = new Set(currentQuestions.map(q => q.id));
-          const pastIds = new Set(pastQuestions.map(q => q.id));
+          const usedIds = new Set([...currentQuestions, ...pastQuestions].map(q => q.id));
           const filler = shuffle(
-            allQuestions.filter(q => q.dayId !== dayId && !currentIds.has(q.id) && !pastIds.has(q.id))
+            uniqueQuestions.filter(q => q.dayId !== dayId && !usedIds.has(q.id))
           ).slice(0, MIN_QUESTIONS_PER_DAY - currentQuestions.length);
           currentQuestions = [...currentQuestions, ...filler];
         }
 
+        // Final dedup: ensure no overlap between past and current
+        const currentIds = new Set(currentQuestions.map(q => q.id));
+        const dedupedPast = pastQuestions.filter(q => !currentIds.has(q.id));
+
         // Combine and shuffle everything together for a truly random order
-        const combined = shuffle([...pastQuestions, ...currentQuestions]);
+        const combined = shuffle([...dedupedPast, ...currentQuestions]);
 
         set({
           questions: combined,

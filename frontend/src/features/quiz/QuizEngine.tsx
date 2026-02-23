@@ -193,23 +193,20 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
         {/* Feedback + Next */}
         {showFeedback && (
           <div className="mt-4 space-y-3">
-            {currentQ.explanation && (
-              <div className="rounded-xl p-3" style={{ backgroundColor: isCorrect ? '#10b98110' : '#ef444410', border: `1px solid ${isCorrect ? '#10b98130' : '#ef444430'}` }}>
-                <p className="flex justify-center items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: isCorrect ? '#10b981' : '#ef4444' }}>
-                  {isCorrect ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
-                  {isCorrect ? 'Correct!' : 'Incorrect'}
+            <div className="rounded-xl p-3" style={{ backgroundColor: isCorrect ? '#10b98110' : '#ef444410', border: `1px solid ${isCorrect ? '#10b98130' : '#ef444430'}` }}>
+              <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: isCorrect ? '#10b981' : '#ef4444' }}>
+                {isCorrect ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                {isCorrect ? 'Correct!' : 'Incorrect'}
+              </p>
+              {!isCorrect && (
+                <p className="text-xs font-semibold mt-1 mb-1" style={{ color: 'var(--text-primary)' }}>
+                  Correct Answer: {currentQ.options[currentQ.correctAnswer]}
                 </p>
-                <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{currentQ.explanation}</p>
-              </div>
-            )}
-            {!currentQ.explanation && (
-              <div className="rounded-xl p-3 text-center" style={{ backgroundColor: isCorrect ? '#10b98110' : '#ef444410', border: `1px solid ${isCorrect ? '#10b98130' : '#ef444430'}` }}>
-                <p className="flex justify-center items-center gap-1.5 text-sm font-bold" style={{ color: isCorrect ? '#10b981' : '#ef4444' }}>
-                  {isCorrect ? <CheckCircle className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
-                  {isCorrect ? 'Correct!' : `Incorrect — Answer: ${String.fromCharCode(65 + currentQ.correctAnswer)}`}
-                </p>
-              </div>
-            )}
+              )}
+              {currentQ.explanation && currentQ.explanation.trim() !== '' && (
+                <p className="text-xs leading-relaxed mt-1" style={{ color: 'var(--text-secondary)' }}>{currentQ.explanation}</p>
+              )}
+            </div>
             <button
               onClick={handleNext}
               className="w-full py-3.5 rounded-xl font-black text-xs tracking-widest text-white active:scale-95 transition-transform"
