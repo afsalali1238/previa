@@ -1,6 +1,7 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useAuthStore } from '../features/auth/store/authStore';
-import { MessageCircle, Rocket, BookOpen, Ghost, Swords, Smartphone, Share, MoreVertical } from 'lucide-react';
+import { MessageCircle, Rocket, BookOpen, Ghost, Swords, Target, Trophy, Brain, ArrowRight } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
   const { login } = useAuthStore();
@@ -82,50 +83,42 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Features Grid */}
-      <section className="px-5 py-12 max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {[
-          { title: "50 Qs Per Topic", desc: "Intense daily focus sessions. 50 high-yield questions every day to ensure total syllabus coverage.", icon: <BookOpen className="w-8 h-8" /> },
-          { title: "The Ghost Rule", desc: "10 review questions from previous worlds daily to combat memory decay automatically.", icon: <Ghost className="w-8 h-8" /> },
-          { title: "Battle Duels", desc: "Challenge peers in battles to earn Hero Credits and climb the leaderboard.", icon: <Swords className="w-8 h-8" /> }
-        ].map((feat, i) => (
-          <div key={i} className="border p-6 rounded-3xl transition-all group hover:border-blue-500/30" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
-            <div className="text-3xl mb-4 group-hover:scale-110 transition-transform inline-block">{feat.icon}</div>
-            <h3 className="text-lg font-black mb-2 italic tracking-tight" style={{ color: 'var(--text-primary)' }}>{feat.title}</h3>
-            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{feat.desc}</p>
-          </div>
-        ))}
+      {/* Features Grid — 6 cards */}
+      <section className="px-5 py-12 max-w-6xl mx-auto">
+        <h2 className="text-sm font-bold tracking-[0.2em] uppercase mb-8 text-center" style={{ color: 'var(--accent-blue)' }}>What Makes PROVIA Different</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[
+            { title: "2,000+ Real MCQs", desc: "Questions mapped directly from the Prometric exam syllabus — no fluff, no filler.", icon: <Brain className="w-7 h-7" />, color: '#8b5cf6' },
+            { title: "The Ghost Rule", desc: "10 review questions from past days mixed into every quiz to combat memory decay.", icon: <Ghost className="w-7 h-7" />, color: '#06b6d4' },
+            { title: "Daily Quiz Engine", desc: "20–50 questions per day, randomized order, 80% pass mark, 3 attempts allowed.", icon: <BookOpen className="w-7 h-7" />, color: '#3b82f6' },
+            { title: "Milestone Checkpoints", desc: "Checkpoint exams at Days 10, 20, 30, 40 and a Final Mock covering all 45 days.", icon: <Target className="w-7 h-7" />, color: '#f43f5e' },
+            { title: "Hero Credits & Streaks", desc: "Earn credits for passing quizzes. Maintain daily streaks. Climb the leaderboard.", icon: <Trophy className="w-7 h-7" />, color: '#f59e0b' },
+            { title: "Battle Arena", desc: "Challenge peers in head-to-head quiz duels. Stake 20 Hero Credits — winner takes all.", icon: <Swords className="w-7 h-7" />, color: '#6366f1' },
+          ].map((feat, i) => (
+            <div key={i} className="border p-5 rounded-2xl transition-all group hover:border-blue-500/30" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform" style={{ backgroundColor: feat.color + '15', color: feat.color }}>
+                {feat.icon}
+              </div>
+              <h3 className="text-sm font-black mb-1.5 tracking-tight" style={{ color: 'var(--text-primary)' }}>{feat.title}</h3>
+              <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{feat.desc}</p>
+            </div>
+          ))}
+        </div>
       </section>
 
-      {/* Install as App */}
-      <section className="px-5 py-12 max-w-xl mx-auto text-center">
-        <div className="rounded-3xl p-6 sm:p-8" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-          <Smartphone className="w-10 h-10 mx-auto mb-4 text-blue-500" />
-          <h2 className="text-lg font-black italic tracking-tight mb-1" style={{ color: 'var(--text-primary)' }}>Use PROVIA as an App</h2>
-          <p className="text-xs mb-5" style={{ color: 'var(--text-muted)' }}>Add to your Home Screen for a full-screen, app-like experience.</p>
-
-          <div className="space-y-4 text-left">
-            {/* iOS */}
-            <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
-              <p className="text-[10px] font-black uppercase tracking-widest mb-2 text-blue-500">iPhone / iPad (Safari)</p>
-              <ol className="text-xs leading-relaxed space-y-1" style={{ color: 'var(--text-secondary)' }}>
-                <li className="flex items-start gap-2"><span className="font-bold" style={{ color: 'var(--text-primary)' }}>1.</span> Tap the <Share className="w-3.5 h-3.5 inline-block mx-0.5 -mt-0.5" /> <strong>Share</strong> button at the bottom of Safari</li>
-                <li className="flex items-start gap-2"><span className="font-bold" style={{ color: 'var(--text-primary)' }}>2.</span> Scroll down and tap <strong>"Add to Home Screen"</strong></li>
-                <li className="flex items-start gap-2"><span className="font-bold" style={{ color: 'var(--text-primary)' }}>3.</span> Tap <strong>"Add"</strong> — Done!</li>
-              </ol>
-            </div>
-
-            {/* Android */}
-            <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
-              <p className="text-[10px] font-black uppercase tracking-widest mb-2 text-emerald-500">Android (Chrome)</p>
-              <ol className="text-xs leading-relaxed space-y-1" style={{ color: 'var(--text-secondary)' }}>
-                <li className="flex items-start gap-2"><span className="font-bold" style={{ color: 'var(--text-primary)' }}>1.</span> Tap the <MoreVertical className="w-3.5 h-3.5 inline-block mx-0.5 -mt-0.5" /> <strong>menu</strong> (three dots) in Chrome</li>
-                <li className="flex items-start gap-2"><span className="font-bold" style={{ color: 'var(--text-primary)' }}>2.</span> Tap <strong>"Add to Home screen"</strong></li>
-                <li className="flex items-start gap-2"><span className="font-bold" style={{ color: 'var(--text-primary)' }}>3.</span> Tap <strong>"Add"</strong> — Done!</li>
-              </ol>
-            </div>
-          </div>
-        </div>
+      {/* How It Works CTA */}
+      <section className="px-5 py-8 max-w-xl mx-auto text-center">
+        <Link
+          to="/how-it-works"
+          className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl font-black text-sm tracking-widest transition-all hover:scale-105 active:scale-95"
+          style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+        >
+          HOW IT WORKS
+          <ArrowRight className="w-4 h-4" />
+        </Link>
+        <p className="text-[10px] font-bold uppercase tracking-widest mt-3" style={{ color: 'var(--text-muted)' }}>
+          Full guide · Install as app · FAQ
+        </p>
       </section>
 
       {/* Footer / Authorities */}
