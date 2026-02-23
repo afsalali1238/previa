@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../features/auth/store/authStore';
-import { MessageCircle, Rocket, BookOpen, Ghost, Swords, Target, Trophy, Brain, ArrowRight } from 'lucide-react';
+import { MessageCircle, Rocket, Brain, Ghost, Swords, ArrowRight } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
   const { login } = useAuthStore();
@@ -14,12 +14,12 @@ export const LandingPage: React.FC = () => {
           <img src="/logo-provia.png" alt="Provia" className="w-8 h-8 rounded-lg object-contain logo-dark-bg" />
           <span className="text-xl font-black tracking-tighter italic bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">PROVIA</span>
         </div>
-        <button
-          onClick={() => login()}
+        <Link
+          to="/how-it-works"
           className="text-xs font-bold hover:text-blue-400 transition-colors uppercase tracking-widest"
         >
-          Enter App →
-        </button>
+          How It Works
+        </Link>
       </nav>
 
       {/* WhatsApp Data Flow Banner */}
@@ -83,17 +83,14 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Features Grid — 6 cards */}
+      {/* Features Grid — 3 hero cards */}
       <section className="px-5 py-12 max-w-6xl mx-auto">
         <h2 className="text-sm font-bold tracking-[0.2em] uppercase mb-8 text-center" style={{ color: 'var(--accent-blue)' }}>What Makes PROVIA Different</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             { title: "2,000+ Real MCQs", desc: "Questions mapped directly from the Prometric exam syllabus — no fluff, no filler.", icon: <Brain className="w-7 h-7" />, color: '#8b5cf6' },
             { title: "The Ghost Rule", desc: "10 review questions from past days mixed into every quiz to combat memory decay.", icon: <Ghost className="w-7 h-7" />, color: '#06b6d4' },
-            { title: "Daily Quiz Engine", desc: "20–50 questions per day, randomized order, 80% pass mark, 3 attempts allowed.", icon: <BookOpen className="w-7 h-7" />, color: '#3b82f6' },
-            { title: "Milestone Checkpoints", desc: "Checkpoint exams at Days 10, 20, 30, 40 and a Final Mock covering all 45 days.", icon: <Target className="w-7 h-7" />, color: '#f43f5e' },
-            { title: "Hero Credits & Streaks", desc: "Earn credits for passing quizzes. Maintain daily streaks. Climb the leaderboard.", icon: <Trophy className="w-7 h-7" />, color: '#f59e0b' },
-            { title: "Battle Arena", desc: "Challenge peers in head-to-head quiz duels. Stake 20 Hero Credits — winner takes all.", icon: <Swords className="w-7 h-7" />, color: '#6366f1' },
+            { title: "Battle Arena", desc: "Challenge peers in head-to-head quiz duels. Stake Hero Credits — winner takes all.", icon: <Swords className="w-7 h-7" />, color: '#6366f1' },
           ].map((feat, i) => (
             <div key={i} className="border p-5 rounded-2xl transition-all group hover:border-blue-500/30" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
               <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform" style={{ backgroundColor: feat.color + '15', color: feat.color }}>
@@ -113,11 +110,11 @@ export const LandingPage: React.FC = () => {
           className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl font-black text-sm tracking-widest transition-all hover:scale-105 active:scale-95"
           style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
         >
-          HOW IT WORKS
+          EXPLORE ALL FEATURES
           <ArrowRight className="w-4 h-4" />
         </Link>
         <p className="text-[10px] font-bold uppercase tracking-widest mt-3" style={{ color: 'var(--text-muted)' }}>
-          Full guide · Install as app · FAQ
+          Milestones · Discussions · Streaks · Install as App & More
         </p>
       </section>
 

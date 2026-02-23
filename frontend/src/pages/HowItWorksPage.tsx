@@ -99,6 +99,19 @@ const SECTIONS = [
             'The winner takes the full pot — sharpen your skills to win!',
         ],
     },
+    {
+        id: 'discussions',
+        icon: <MessageCircle className="w-6 h-6" />,
+        color: '#14b8a6',
+        title: 'Discussions & Community',
+        description: 'Connect with fellow candidates in topic-based discussion threads.',
+        details: [
+            'Study Materials: Share and discover useful resources.',
+            'Doubts & Questions: Get answers from the community.',
+            'Exam Tips: Share strategies that worked for you.',
+            'General Chat: Connect with peers on your prep journey.',
+        ],
+    },
 ];
 
 export const HowItWorksPage: React.FC = () => {
