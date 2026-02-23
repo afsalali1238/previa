@@ -14,12 +14,17 @@ export interface Question {
 interface QuizState {
   questions: Question[];
   currentIndex: number;
-  answers: number[];
+  answers: Record<number, number>;
+  bookmarked: Record<number, boolean>;
+  mode: 'daily' | 'mock';
   cooldowns: Record<number, number>;       // dayId -> cooldown-until timestamp
   dailyAttempts: Record<number, { count: number; date: string }>; // dayId -> { count, date }
 
-  startQuiz: (dayId: number, allQuestions: Question[]) => void;
+  startQuiz: (dayId: number, allQuestions: Question[], options?: { mode?: 'daily' | 'mock'; dayRange?: [number, number] }) => void;
   submitAnswer: (answerIndex: number) => void;
+  setAnswer: (qIndex: number, answerIndex: number) => void;
+  toggleBookmark: (qIndex: number) => void;
+  setCurrentIndex: (index: number) => void;
   finishQuiz: (dayId: number) => { score: number; passed: boolean; cooldownMins: number; attemptsLeft: number; lockedUntilTomorrow: boolean };
   getAttemptInfo: (dayId: number) => { attemptsUsed: number; attemptsLeft: number; isLockedToday: boolean; cooldownUntil: number | null };
 }
@@ -50,7 +55,9 @@ export const useQuizStore = create<QuizState>()(
     (set, get) => ({
       questions: [],
       currentIndex: 0,
-      answers: [],
+      answers: {},
+      bookmarked: {},
+      mode: 'daily',
       cooldowns: {},
       dailyAttempts: {},
 
@@ -65,7 +72,9 @@ export const useQuizStore = create<QuizState>()(
         return { attemptsUsed, attemptsLeft, isLockedToday, cooldownUntil };
       },
 
-      startQuiz: (dayId, allQuestions) => {
+      startQuiz: (dayId, allQuestions, options = {}) => {
+        const mode = options.mode || 'daily';
+
         // Deduplicate questions by their text to avoid repeats
         const seen = new Set<string>();
         const uniqueQuestions = allQuestions.filter(q => {
@@ -75,89 +84,113 @@ export const useQuizStore = create<QuizState>()(
           return true;
         });
 
-        // Pick up to 10 random review questions from earlier days
-        const pastQuestions = shuffle(
-          uniqueQuestions.filter(q => q.dayId < dayId)
-        ).slice(0, REVIEW_QUESTIONS_COUNT);
+        let combined: Question[] = [];
 
-        // Pick current-day questions: use all if ≤50, random 50 if more
-        const dayPool = uniqueQuestions.filter(q => q.dayId === dayId);
-        let currentQuestions = dayPool.length <= MAX_QUESTIONS_PER_DAY
-          ? shuffle(dayPool)
-          : shuffle(dayPool).slice(0, MAX_QUESTIONS_PER_DAY);
+        if (mode === 'mock' && options.dayRange) {
+          const [start, end] = options.dayRange;
+          const pool = uniqueQuestions.filter(q => q.dayId >= start && q.dayId <= end);
+          // E.g., maximum 100 questions for mock exams
+          combined = shuffle(pool).slice(0, 100);
+        } else {
+          // Pick up to 10 random review questions from earlier days
+          const pastQuestions = shuffle(
+            uniqueQuestions.filter(q => q.dayId < dayId)
+          ).slice(0, REVIEW_QUESTIONS_COUNT);
 
-        // If fewer than 20 questions for this day, pad with random questions from other days
-        if (currentQuestions.length < MIN_QUESTIONS_PER_DAY) {
-          const usedIds = new Set([...currentQuestions, ...pastQuestions].map(q => q.id));
-          const filler = shuffle(
-            uniqueQuestions.filter(q => q.dayId !== dayId && !usedIds.has(q.id))
-          ).slice(0, MIN_QUESTIONS_PER_DAY - currentQuestions.length);
-          currentQuestions = [...currentQuestions, ...filler];
+          // Pick current-day questions: use all if ≤50, random 50 if more
+          const dayPool = uniqueQuestions.filter(q => q.dayId === dayId);
+          let currentQuestions = dayPool.length <= MAX_QUESTIONS_PER_DAY
+            ? shuffle(dayPool)
+            : shuffle(dayPool).slice(0, MAX_QUESTIONS_PER_DAY);
+
+          // If fewer than 20 questions for this day, pad with random questions from other days
+          if (currentQuestions.length < MIN_QUESTIONS_PER_DAY) {
+            const usedIds = new Set([...currentQuestions, ...pastQuestions].map(q => q.id));
+            const filler = shuffle(
+              uniqueQuestions.filter(q => q.dayId !== dayId && !usedIds.has(q.id))
+            ).slice(0, MIN_QUESTIONS_PER_DAY - currentQuestions.length);
+            currentQuestions = [...currentQuestions, ...filler];
+          }
+
+          // Final dedup: ensure no overlap between past and current
+          const currentIds = new Set(currentQuestions.map(q => q.id));
+          const dedupedPast = pastQuestions.filter(q => !currentIds.has(q.id));
+
+          // Combine and shuffle everything together for a truly random order
+          combined = shuffle([...dedupedPast, ...currentQuestions]);
         }
-
-        // Final dedup: ensure no overlap between past and current
-        const currentIds = new Set(currentQuestions.map(q => q.id));
-        const dedupedPast = pastQuestions.filter(q => !currentIds.has(q.id));
-
-        // Combine and shuffle everything together for a truly random order
-        const combined = shuffle([...dedupedPast, ...currentQuestions]);
 
         set({
           questions: combined,
           currentIndex: 0,
-          answers: [],
+          answers: {},
+          bookmarked: {},
+          mode,
         });
       },
 
       submitAnswer: (answerIndex) => set((state) => ({
-        answers: [...state.answers, answerIndex],
+        answers: { ...state.answers, [state.currentIndex]: answerIndex },
         currentIndex: state.currentIndex + 1
       })),
 
+      setAnswer: (qIndex, answerIndex) => set((state) => ({
+        answers: { ...state.answers, [qIndex]: answerIndex }
+      })),
+
+      toggleBookmark: (qIndex) => set((state) => ({
+        bookmarked: { ...state.bookmarked, [qIndex]: !state.bookmarked[qIndex] }
+      })),
+
+      setCurrentIndex: (index) => set({ currentIndex: index }),
+
       finishQuiz: (dayId) => {
-        const { questions, answers, dailyAttempts } = get();
-        const correctCount = answers.reduce((acc, ans, i) =>
-          ans === questions[i]?.correctAnswer ? acc + 1 : acc
+        const { questions, answers, dailyAttempts, mode } = get();
+        const correctCount = questions.reduce((acc, q, i) =>
+          answers[i] === q.correctAnswer ? acc + 1 : acc
           , 0);
 
         const score = Math.round((correctCount / questions.length) * 100);
         const passed = score >= PASS_THRESHOLD;
         const today = todayStr();
 
-        // Update daily attempts
-        const entry = dailyAttempts[dayId];
-        const prevCount = (entry && entry.date === today) ? entry.count : 0;
-        const newCount = prevCount + 1;
-
         let cooldownMins = 0;
         let lockedUntilTomorrow = false;
+        let attemptsLeft = MAX_DAILY_ATTEMPTS;
 
-        if (!passed) {
-          if (newCount >= MAX_DAILY_ATTEMPTS) {
-            // 3 fails today — locked until tomorrow
-            lockedUntilTomorrow = true;
-            cooldownMins = 0; // no timed cooldown, just locked for the day
-          } else {
-            // failed but attempts remain — 30-min cooldown
-            cooldownMins = FAIL_COOLDOWN_MINS;
-            const cooldownUntil = Date.now() + (cooldownMins * 60 * 1000);
-            set((state) => ({
-              cooldowns: { ...state.cooldowns, [dayId]: cooldownUntil },
-            }));
+        if (mode === 'daily') {
+          // Update daily attempts
+          const entry = dailyAttempts[dayId];
+          const prevCount = (entry && entry.date === today) ? entry.count : 0;
+          const newCount = prevCount + 1;
+
+          if (!passed) {
+            if (newCount >= MAX_DAILY_ATTEMPTS) {
+              // 3 fails today — locked until tomorrow
+              lockedUntilTomorrow = true;
+            } else {
+              // failed but attempts remain — 30-min cooldown
+              cooldownMins = FAIL_COOLDOWN_MINS;
+              const cooldownUntil = Date.now() + (cooldownMins * 60 * 1000);
+              set((state) => ({
+                cooldowns: { ...state.cooldowns, [dayId]: cooldownUntil },
+              }));
+            }
           }
+
+          // Always record the attempt
+          set((state) => ({
+            dailyAttempts: {
+              ...state.dailyAttempts,
+              [dayId]: { count: newCount, date: today }
+            },
+            // Clear cooldown on pass
+            ...(passed ? { cooldowns: { ...state.cooldowns, [dayId]: 0 } } : {}),
+          }));
+
+          attemptsLeft = MAX_DAILY_ATTEMPTS - newCount;
         }
 
-        // Always record the attempt
-        set((state) => ({
-          dailyAttempts: {
-            ...state.dailyAttempts,
-            [dayId]: { count: newCount, date: today }
-          },
-          // Clear cooldown on pass
-          ...(passed ? { cooldowns: { ...state.cooldowns, [dayId]: 0 } } : {}),
-        }));
-
-        const attemptsLeft = MAX_DAILY_ATTEMPTS - newCount;
         return { score, passed, cooldownMins, attemptsLeft, lockedUntilTomorrow };
       }
     }),

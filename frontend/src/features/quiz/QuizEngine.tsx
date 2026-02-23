@@ -1,54 +1,94 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuizStore } from './store/quizStore';
 import { useProviaStore } from '../roadmap/store/proviaStore';
-import { CheckCircle, XCircle, Trophy, Clock } from 'lucide-react';
+import { CheckCircle, XCircle, Trophy, Clock, Star, LayoutGrid, ArrowLeft, ArrowRight } from 'lucide-react';
 
 export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ dayId, onClose }) => {
-  const { questions, currentIndex, submitAnswer, finishQuiz } = useQuizStore();
+  const {
+    questions, currentIndex, answers, bookmarked, mode,
+    setAnswer, toggleBookmark, setCurrentIndex, finishQuiz
+  } = useQuizStore();
+
   const { completeDay } = useProviaStore();
   const [result, setResult] = useState<{ score: number; passed: boolean; cooldownMins: number; attemptsLeft?: number; lockedUntilTomorrow?: boolean } | null>(null);
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [timeSpent, setTimeSpent] = useState(0);
+  const [timeSpent, setTimeSpent] = useState(0); // For daily mode (count up)
   const [totalTimeSpent, setTotalTimeSpent] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(questions.length * 90); // For mock mode (count down, 90s per Q)
+  const [showReview, setShowReview] = useState(false);
 
-  React.useEffect(() => {
-    setTimeSpent(0);
-  }, [currentIndex]);
-
-  React.useEffect(() => {
-    if (showFeedback || result) return;
+  // Time tracking
+  useEffect(() => {
+    if (result) return;
     const interval = setInterval(() => {
-      setTimeSpent(t => t + 1);
       setTotalTimeSpent(t => t + 1);
+
+      if (mode === 'daily') {
+        if (!showFeedback) setTimeSpent(t => t + 1);
+      } else {
+        setTimeLeft(t => {
+          if (t <= 1) {
+            handleFinalSubmit();
+            return 0;
+          }
+          return t - 1;
+        });
+      }
     }, 1000);
     return () => clearInterval(interval);
-  }, [showFeedback, result, currentIndex]);
+  }, [showFeedback, result, mode]);
+
+  useEffect(() => {
+    if (mode === 'daily') setTimeSpent(0);
+  }, [currentIndex, mode]);
 
   const currentQ = questions[currentIndex];
+  // Convert answers record to selected answer for this question
+  const selectedAnswer = answers[currentIndex] ?? null;
   const isCorrect = selectedAnswer !== null && currentQ && selectedAnswer === currentQ.correctAnswer;
   const isLast = currentIndex === questions.length - 1;
 
   const handleAnswer = (idx: number) => {
-    if (showFeedback) return; // prevent double-tap
-    setSelectedAnswer(idx);
-    setShowFeedback(true);
+    if (mode === 'daily') {
+      if (showFeedback) return; // prevent double-tap
+      setAnswer(currentIndex, idx);
+      setShowFeedback(true);
+    } else {
+      // Mock mode: just select, no feedback
+      setAnswer(currentIndex, idx);
+    }
   };
 
   const handleNext = () => {
-    if (selectedAnswer === null) return;
-    submitAnswer(selectedAnswer);
-
-    if (isLast) {
-      const res = finishQuiz(dayId);
-      setResult(res);
-      if (res.passed) {
-        completeDay(dayId, res.score);
+    if (mode === 'daily') {
+      if (isLast) {
+        handleFinalSubmit();
+      } else {
+        setCurrentIndex(currentIndex + 1);
+        setShowFeedback(false);
+      }
+    } else {
+      if (isLast) {
+        setShowReview(true);
+      } else {
+        setCurrentIndex(currentIndex + 1);
       }
     }
+  };
 
-    setSelectedAnswer(null);
-    setShowFeedback(false);
+  const handlePrev = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
+
+  const handleFinalSubmit = () => {
+    const res = finishQuiz(dayId);
+    setResult(res);
+    if (res.passed) {
+      completeDay(dayId, res.score);
+    }
+    setShowReview(false);
   };
 
   // ── Result Screen ──
@@ -69,9 +109,11 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
           <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
             {result.passed
               ? 'Congratulations! You have unlocked the next day and earned 10 Hero Credits.'
-              : result.lockedUntilTomorrow
-                ? 'You have used all 3 attempts today. Come back tomorrow!'
-                : `You didn't reach the 80% pass mark. Go review the topic and come back in 30 minutes. ${result.attemptsLeft ?? 0} attempt(s) remaining today.`
+              : mode === 'daily'
+                ? result.lockedUntilTomorrow
+                  ? 'You have used all 3 attempts today. Come back tomorrow!'
+                  : `You didn't reach the 80% pass mark. Go review the topic and come back in 30 minutes. ${result.attemptsLeft ?? 0} attempt(s) remaining today.`
+                : 'You did not reach the 80% pass mark for this test. Keep studying!'
             }
           </p>
 
@@ -104,12 +146,82 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
     );
   }
 
+  // ── Review Screen (Mock Mode Only) ──
+  if (showReview) {
+    const answeredCount = Object.keys(answers).length;
+    return (
+      <div className="fixed inset-0 z-[100] flex flex-col bg-slate-950/95 backdrop-blur-md">
+        <div className="flex-1 overflow-y-auto px-4 py-8 max-w-lg mx-auto w-full">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-black text-white">Review Answers</h2>
+            <p className="text-slate-400 text-sm mt-1">
+              Answered: <span className="text-emerald-400 font-bold">{answeredCount}</span> / {questions.length}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-5 gap-3">
+            {questions.map((_, idx) => {
+              const isAnswered = answers[idx] !== undefined;
+              const isMarked = bookmarked[idx] || false;
+
+              let bg = 'var(--bg-card)';
+              let border = 'var(--border)';
+              if (isAnswered) {
+                bg = 'var(--accent-blue)';
+                border = 'var(--accent-blue)';
+              }
+
+              return (
+                <button
+                  key={idx}
+                  onClick={() => { setShowReview(false); setCurrentIndex(idx); }}
+                  className="aspect-square rounded-xl flex items-center justify-center font-bold text-sm relative transition-transform active:scale-90"
+                  style={{ backgroundColor: bg, border: `1px solid ${border}`, color: isAnswered ? '#fff' : 'var(--text-secondary)' }}
+                >
+                  {idx + 1}
+                  {isMarked && (
+                    <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-amber-500 border border-slate-900 flex items-center justify-center">
+                      <Star className="w-2.5 h-2.5 text-slate-900 fill-slate-900" />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+        </div>
+
+        <div className="p-4 max-w-lg mx-auto w-full flex gap-3 pb-8">
+          <button
+            onClick={() => setShowReview(false)}
+            className="flex-1 py-4 rounded-2xl font-black text-xs tracking-widest text-white border border-slate-700 active:scale-95"
+          >
+            BACK
+          </button>
+          <button
+            onClick={handleFinalSubmit}
+            className="flex-1 py-4 rounded-2xl font-black text-xs tracking-widest text-white bg-emerald-500 active:scale-95 shadow-lg shadow-emerald-500/20"
+          >
+            SUBMIT TEST
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // ── No question fallback ──
   if (!currentQ) return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
       <button onClick={onClose} className="font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Back to Roadmap</button>
     </div>
   );
+
+  // Formatter for time
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
 
   // ── Quiz Screen ──
   return (
@@ -128,13 +240,13 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
         <span className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
-          Day {dayId} · {currentIndex + 1}/{questions.length}
+          {mode === 'mock' ? 'MOCK EXAM' : `Day ${dayId}`} · {currentIndex + 1}/{questions.length}
         </span>
         <div
           className="text-[11px] font-bold flex-shrink-0 w-12 text-right"
-          style={{ color: timeSpent > 90 ? '#ef4444' : 'var(--text-muted)' }}
+          style={{ color: (mode === 'daily' && timeSpent > 90) || (mode === 'mock' && timeLeft < 60) ? '#ef4444' : 'var(--text-muted)' }}
         >
-          {Math.floor(timeSpent / 60)}:{(timeSpent % 60).toString().padStart(2, '0')}
+          {mode === 'daily' ? formatTime(timeSpent) : formatTime(timeLeft)}
         </div>
       </div>
 
@@ -154,7 +266,7 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
             let labelBg = 'var(--bg-card)';
             let labelColor = 'var(--text-muted)';
 
-            if (showFeedback) {
+            if (mode === 'daily' && showFeedback) {
               if (isCorrectOption) {
                 borderColor = '#10b981';
                 bgColor = '#10b98110';
@@ -171,18 +283,21 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
             } else if (isSelected) {
               borderColor = 'var(--accent-blue)';
               bgColor = 'var(--accent-blue)' + '10';
+              textColor = 'var(--text-primary)';
+              labelBg = 'var(--accent-blue)';
+              labelColor = '#fff';
             }
 
             return (
               <button
                 key={i}
                 onClick={() => handleAnswer(i)}
-                disabled={showFeedback}
+                disabled={mode === 'daily' && showFeedback}
                 className="w-full p-4 rounded-xl text-left flex items-center gap-3 transition-all active:scale-[0.98]"
                 style={{ backgroundColor: bgColor, border: `1.5px solid ${borderColor}` }}
               >
                 <div className="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center text-[10px] font-black" style={{ backgroundColor: labelBg, color: labelColor }}>
-                  {showFeedback && isCorrectOption ? '✓' : showFeedback && isSelected && !isCorrectOption ? '✗' : String.fromCharCode(65 + i)}
+                  {mode === 'daily' && showFeedback && isCorrectOption ? '✓' : mode === 'daily' && showFeedback && isSelected && !isCorrectOption ? '✗' : String.fromCharCode(65 + i)}
                 </div>
                 <span className="text-sm font-medium leading-snug" style={{ color: textColor }}>{opt}</span>
               </button>
@@ -190,8 +305,8 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
           })}
         </div>
 
-        {/* Feedback + Next */}
-        {showFeedback && (
+        {/* Feedback (Daily Mode Only) */}
+        {mode === 'daily' && showFeedback && (
           <div className="mt-4 space-y-3">
             <div className="rounded-xl p-3" style={{ backgroundColor: isCorrect ? '#10b98110' : '#ef444410', border: `1px solid ${isCorrect ? '#10b98130' : '#ef444430'}` }}>
               <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: isCorrect ? '#10b981' : '#ef4444' }}>
@@ -213,6 +328,45 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
               style={{ backgroundColor: 'var(--accent-blue)' }}
             >
               {isLast ? 'FINISH TEST' : 'NEXT QUESTION →'}
+            </button>
+          </div>
+        )}
+
+        {/* Mock Mode Navigation */}
+        {mode === 'mock' && (
+          <div className="mt-6 pt-4 flex gap-2" style={{ borderTop: '1px solid var(--border)' }}>
+            <button
+              onClick={() => toggleBookmark(currentIndex)}
+              className="py-3.5 px-4 rounded-xl flex items-center justify-center active:scale-95 transition-colors"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: `1px solid ${bookmarked[currentIndex] ? '#f59e0b' : 'var(--border)'}` }}
+            >
+              <Star className={`w-5 h-5 ${bookmarked[currentIndex] ? 'text-amber-500 fill-amber-500' : 'text-slate-400'}`} />
+            </button>
+
+            <button
+              onClick={handlePrev}
+              disabled={currentIndex === 0}
+              className="py-3.5 px-4 rounded-xl flex items-center justify-center active:scale-95 disabled:opacity-30"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+
+            <button
+              onClick={() => setShowReview(true)}
+              className="py-3.5 px-4 rounded-xl flex items-center justify-center active:scale-95"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+            >
+              <LayoutGrid className="w-5 h-5" />
+            </button>
+
+            <button
+              onClick={handleNext}
+              className="flex-1 py-3.5 rounded-xl font-black text-xs tracking-widest text-white active:scale-95 flex items-center justify-center gap-1"
+              style={{ backgroundColor: 'var(--accent-blue)' }}
+            >
+              {isLast ? 'REVIEW' : 'NEXT'}
+              {!isLast && <ArrowRight className="w-4 h-4 ml-1" />}
             </button>
           </div>
         )}

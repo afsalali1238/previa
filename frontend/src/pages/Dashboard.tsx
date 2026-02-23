@@ -27,11 +27,11 @@ const WORLD_COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ef4444", "#0
 const WORLD_NAMES = ["Foundation", "The Engine", "The Lab", "Clinical Mastery", "Toxicology & Safety", "Advanced Pharmaco", "Final Boss"];
 
 const MILESTONE_TESTS = [
-  { id: 'mt-10', title: 'Checkpoint 1', subtitle: 'Days 1–10 Review', requiredDay: 10, icon: <Flag className="w-6 h-6" />, color: '#3b82f6', dayRange: [1, 10] },
-  { id: 'mt-20', title: 'Checkpoint 2', subtitle: 'Days 11–20 Review', requiredDay: 20, icon: <Target className="w-6 h-6" />, color: '#10b981', dayRange: [11, 20] },
-  { id: 'mt-30', title: 'Checkpoint 3', subtitle: 'Days 21–30 Review', requiredDay: 30, icon: <Zap className="w-6 h-6" />, color: '#f59e0b', dayRange: [21, 30] },
-  { id: 'mt-40', title: 'Checkpoint 4', subtitle: 'Days 31–40 Review', requiredDay: 40, icon: <Flame className="w-6 h-6" />, color: '#8b5cf6', dayRange: [31, 40] },
-  { id: 'mt-45', title: 'Full Mock Exam', subtitle: 'All 45 Days — Final Boss', requiredDay: 45, icon: <Crown className="w-6 h-6" />, color: '#f43f5e', dayRange: [1, 45] },
+  { id: '100', title: 'Checkpoint 1', subtitle: 'Days 1–10 Review', requiredDay: 10, icon: <Flag className="w-6 h-6" />, color: '#3b82f6', dayRange: [1, 10] },
+  { id: '110', title: 'Checkpoint 2', subtitle: 'Days 11–20 Review', requiredDay: 20, icon: <Target className="w-6 h-6" />, color: '#10b981', dayRange: [11, 20] },
+  { id: '120', title: 'Checkpoint 3', subtitle: 'Days 21–30 Review', requiredDay: 30, icon: <Zap className="w-6 h-6" />, color: '#f59e0b', dayRange: [21, 30] },
+  { id: '130', title: 'Checkpoint 4', subtitle: 'Days 31–40 Review', requiredDay: 40, icon: <Flame className="w-6 h-6" />, color: '#8b5cf6', dayRange: [31, 40] },
+  { id: '145', title: 'Full Mock Exam', subtitle: 'All 45 Days — Final Boss', requiredDay: 45, icon: <Crown className="w-6 h-6" />, color: '#f43f5e', dayRange: [1, 45] },
 ];
 
 /* ═══ HOME TAB ═══ */
@@ -269,7 +269,7 @@ const RoadmapGrid: React.FC<{ onDayClick?: (dayId: number) => void }> = ({ onDay
 };
 
 /* ═══ TESTS TAB (Milestone Tests Only) ═══ */
-const TestsTab: React.FC<{ onStartQuiz: (dayId: number) => void }> = ({ onStartQuiz }) => {
+const TestsTab: React.FC<{ onStartMockQuiz: (id: number, range: [number, number]) => void }> = ({ onStartMockQuiz }) => {
   const { roadmap } = useProviaStore();
   const completedDays = roadmap.filter(d => d.completed).length;
 
@@ -312,7 +312,7 @@ const TestsTab: React.FC<{ onStartQuiz: (dayId: number) => void }> = ({ onStartQ
               </div>
 
               {isUnlocked && (
-                <button onClick={() => onStartQuiz(test.dayRange[0])} className="w-full mt-3 py-3 rounded-xl text-xs font-black tracking-widest text-white active:scale-95" style={{ backgroundColor: test.color }}>
+                <button onClick={() => onStartMockQuiz(Number(test.id), test.dayRange as [number, number])} className="w-full mt-3 py-3 rounded-xl text-xs font-black tracking-widest text-white active:scale-95" style={{ backgroundColor: test.color }}>
                   START TEST
                 </button>
               )}
@@ -501,11 +501,18 @@ export const Dashboard: React.FC = () => {
 
   useEffect(() => { updateStreak(); }, [updateStreak]);
 
-  const handleStartQuiz = (dayId: number) => {
+  const handleStartDailyQuiz = (dayId: number) => {
     try {
-      startQuiz(dayId, ALL_QUESTIONS);
+      startQuiz(dayId, ALL_QUESTIONS, { mode: 'daily' });
       setActiveQuiz(dayId);
     } catch (_e: unknown) { /* cooldown or locked */ }
+  };
+
+  const handleStartMockQuiz = (id: number, range: [number, number]) => {
+    try {
+      startQuiz(id, ALL_QUESTIONS, { mode: 'mock', dayRange: range });
+      setActiveQuiz(id);
+    } catch (_e: unknown) { /* locked */ }
   };
 
   return (
@@ -535,8 +542,8 @@ export const Dashboard: React.FC = () => {
 
       {/* Content */}
       <div className="max-w-lg mx-auto pb-24">
-        {tab === 'home' && <HomeTab onStartQuiz={handleStartQuiz} />}
-        {tab === 'tests' && <TestsTab onStartQuiz={handleStartQuiz} />}
+        {tab === 'home' && <HomeTab onStartQuiz={handleStartDailyQuiz} />}
+        {tab === 'tests' && <TestsTab onStartMockQuiz={handleStartMockQuiz} />}
         {tab === 'battle' && <BattleTab />}
         {tab === 'discussions' && <DiscussionsTab onBack={() => setTab('home')} />}
       </div>
