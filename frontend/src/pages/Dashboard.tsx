@@ -144,7 +144,7 @@ const RoadmapGrid: React.FC<{ onDayClick?: (dayId: number) => void }> = ({ onDay
                 backgroundColor: isCompleted ? '#10b981' : isCurrent ? 'var(--bg-secondary)' : 'var(--bg-card)',
                 border: isCurrent ? `2px solid ${worldColor}` : isCompleted ? 'none' : '1px solid var(--border-subtle)',
                 color: isCompleted ? 'white' : isCurrent ? 'var(--text-primary)' : 'var(--text-muted)',
-                opacity: (isLocked && !onDayClick?.hasOwnProperty('devMode') && !(window as any).DEV_MODE) ? 0.45 : 1,
+                opacity: isLocked ? 0.45 : 1,
                 minHeight: '34px',
                 cursor: 'pointer',
               }}
@@ -199,15 +199,9 @@ const RoadmapGrid: React.FC<{ onDayClick?: (dayId: number) => void }> = ({ onDay
             )}
 
             {/* Locked Day Notice */}
-            {!selected.unlocked && !(window as any).DEV_MODE && (
+            {!selected.unlocked && (
               <div className="rounded-xl p-3 mb-4 text-center" style={{ backgroundColor: '#f59e0b10', border: '1px solid #f59e0b30' }}>
                 <p className="text-xs font-bold" style={{ color: '#f59e0b' }}>🔒 Complete previous days to unlock this test</p>
-              </div>
-            )}
-
-            {!selected.unlocked && (window as any).DEV_MODE && (
-              <div className="rounded-xl p-3 mb-4 text-center" style={{ backgroundColor: '#8b5cf610', border: '1px solid #8b5cf630' }}>
-                <p className="text-xs font-bold" style={{ color: '#8b5cf6' }}>🛠️ Dev Mode: Lock Bypassed</p>
               </div>
             )}
 
@@ -237,9 +231,9 @@ const RoadmapGrid: React.FC<{ onDayClick?: (dayId: number) => void }> = ({ onDay
               <button onClick={() => setSelectedDay(null)} className="flex-1 py-3.5 rounded-xl text-xs font-black tracking-widest active:scale-95" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-secondary)' }}>
                 CLOSE
               </button>
-              {(selected.unlocked || (window as any).DEV_MODE) && (
+              {selected.unlocked && (
                 <button onClick={() => setShowStudyConfirm(true)} className="flex-1 py-3.5 rounded-xl text-xs font-black tracking-widest text-white active:scale-95" style={{ backgroundColor: 'var(--accent-blue)' }}>
-                  {selected.completed ? 'RETAKE TEST' : (window as any).DEV_MODE && !selected.unlocked ? 'FORCE START' : 'TAKE TEST'}
+                  {selected.completed ? 'RETAKE TEST' : 'TAKE TEST'}
                 </button>
               )}
             </div>
@@ -303,7 +297,7 @@ const TestsTab: React.FC<{ onStartMockQuiz: (id: number, range: [number, number]
                   <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-secondary)' }}>{test.subtitle}</p>
 
                   {/* Progress bar for locked tests */}
-                  {(!isUnlocked && !(window as any).DEV_MODE) && (
+                  {!isUnlocked && (
                     <div className="mt-2">
                       <div className="flex justify-between text-[9px] font-bold mb-1">
                         <span style={{ color: 'var(--text-muted)' }}>{progressDays}/{test.requiredDay} days</span>
@@ -314,18 +308,16 @@ const TestsTab: React.FC<{ onStartMockQuiz: (id: number, range: [number, number]
                       </div>
                     </div>
                   )}
-
-                  {(!isUnlocked && (window as any).DEV_MODE) && (
-                    <div className="mt-2 text-[10px] font-bold" style={{ color: '#8b5cf6' }}>
-                      🛠️ DEV MODE OVERRIDE
-                    </div>
-                  )}
                 </div>
               </div>
 
-              {(isUnlocked || (window as any).DEV_MODE) && (
-                <button onClick={() => onStartMockQuiz(Number(test.id), test.dayRange as [number, number], test.questionCount)} className="w-full mt-3 py-3 rounded-xl text-xs font-black tracking-widest text-white active:scale-95" style={{ backgroundColor: test.color }}>
-                  {isUnlocked ? 'START TEST' : 'FORCE START'}
+              {isUnlocked ? (
+                <button onClick={() => onStartMockQuiz(Number(test.id), test.dayRange as [number, number], test.questionCount)} className="w-full mt-3 py-3 rounded-xl text-xs font-black tracking-widest text-white active:scale-95 transition-transform" style={{ backgroundColor: test.color, boxShadow: `0 4px 14px ${test.color}40` }}>
+                  START TEST
+                </button>
+              ) : (
+                <button onClick={() => onStartMockQuiz(Number(test.id), test.dayRange as [number, number], test.questionCount)} className="w-full mt-3 py-2.5 rounded-xl text-[10px] font-black tracking-widest active:scale-95 transition-colors border-2 border-dashed" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
+                  FORCE START (DEMO)
                 </button>
               )}
             </div>
@@ -536,17 +528,8 @@ export const Dashboard: React.FC = () => {
       <div className="sticky top-0 z-50 backdrop-blur-xl" style={{ backgroundColor: 'var(--bg-elevated)', borderBottom: '1px solid var(--border)' }}>
         <div className="flex items-center justify-between px-4 py-2.5 max-w-lg mx-auto">
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => { (window as any).DEV_MODE = !(window as any).DEV_MODE; setTab(t => t); }} // force re-render hack
-              className="relative rounded-lg overflow-hidden active:scale-95 transition-transform"
-            >
-              <img src="/logo-provia.png" alt="Provia" className="w-7 h-7 object-contain relative z-10" style={{ backgroundColor: mode === 'dark' ? '#ffffff' : 'transparent', padding: mode === 'dark' ? '2px' : '0' }} />
-              {(window as any).DEV_MODE && <div className="absolute inset-0 border-2 border-purple-500 rounded-lg z-20 pointer-events-none" />}
-            </button>
-            <span className="text-base font-black italic tracking-tighter bg-gradient-to-r from-blue-500 to-emerald-500 bg-clip-text text-transparent">
-              PROVIA
-            </span>
-            {(window as any).DEV_MODE && <span className="text-[9px] font-bold bg-purple-500 text-white px-1.5 py-0.5 rounded-md ml-1 -translate-y-1">DEV</span>}
+            <img src="/logo-provia.png" alt="Provia" className="w-7 h-7 rounded-lg object-contain" style={{ backgroundColor: mode === 'dark' ? '#ffffff' : 'transparent', padding: mode === 'dark' ? '2px' : '0' }} />
+            <span className="text-base font-black italic tracking-tighter bg-gradient-to-r from-blue-500 to-emerald-500 bg-clip-text text-transparent">PROVIA</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-black" style={{ backgroundColor: '#f59e0b15', color: '#f59e0b', border: '1px solid #f59e0b30' }}>💎 {heroCredits}</div>
