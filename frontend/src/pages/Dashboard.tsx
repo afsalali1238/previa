@@ -316,9 +316,12 @@ const TestsTab: React.FC<{ onStartMockQuiz: (id: number, range: [number, number]
                   START TEST
                 </button>
               ) : (
-                <button onClick={() => onStartMockQuiz(Number(test.id), test.dayRange as [number, number], test.questionCount)} className="w-full mt-3 py-2.5 rounded-xl text-[10px] font-black tracking-widest active:scale-95 transition-colors border-2 border-dashed" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
-                  FORCE START (DEMO)
-                </button>
+                <div className="flex justify-center mt-3">
+                  <button onClick={() => onStartMockQuiz(Number(test.id), test.dayRange as [number, number], test.questionCount)} className="px-3 py-1.5 rounded-full text-[9px] font-bold tracking-widest active:scale-95 transition-colors border border-dashed flex items-center justify-center gap-1 opacity-70 hover:opacity-100" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
+                    <span>TEST DEMO</span>
+                    <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                  </button>
+                </div>
               )}
             </div>
           );
