@@ -517,7 +517,7 @@ export const Dashboard: React.FC = () => {
       <div className="sticky top-0 z-50 backdrop-blur-xl" style={{ backgroundColor: 'var(--bg-elevated)', borderBottom: '1px solid var(--border)' }}>
         <div className="flex items-center justify-between px-4 py-2.5 max-w-lg mx-auto">
           <div className="flex items-center gap-2">
-            <img src="/logo-provia.png" alt="Provia" className="w-7 h-7 rounded-lg object-contain" style={{ mixBlendMode: mode === 'dark' ? 'screen' : 'multiply' }} />
+            <img src="/logo-provia.png" alt="Provia" className="w-7 h-7 rounded-lg object-contain" style={{ backgroundColor: mode === 'dark' ? '#ffffff' : 'transparent', padding: mode === 'dark' ? '2px' : '0' }} />
             <span className="text-base font-black italic tracking-tighter bg-gradient-to-r from-blue-500 to-emerald-500 bg-clip-text text-transparent">PROVIA</span>
           </div>
           <div className="flex items-center gap-2">
