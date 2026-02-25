@@ -10,7 +10,7 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
   } = useQuizStore();
 
   const { completeDay } = useProviaStore();
-  const [result, setResult] = useState<{ score: number; passed: boolean; cooldownMins: number; attemptsLeft?: number; lockedUntilTomorrow?: boolean } | null>(null);
+  const [result, setResult] = useState<{ score: number; passed: boolean; cooldownMins: number; attemptsLeft?: number; lockedUntilTomorrow?: boolean; cooldownUntil?: number | null } | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [timeSpent, setTimeSpent] = useState(0); // For daily mode (count up)
   const [totalTimeSpent, setTotalTimeSpent] = useState(0);
@@ -85,7 +85,10 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
 
   const handleFinalSubmit = () => {
     const res = finishQuiz(dayId);
-    setResult(res);
+    // Fetch attempt info to get exact cooldown timestamp to display in UI
+    const attemptInfo = useQuizStore.getState().getAttemptInfo(dayId);
+
+    setResult({ ...res, cooldownUntil: attemptInfo.cooldownUntil });
     if (res.passed) {
       completeDay(dayId, res.score);
     }
@@ -329,8 +332,8 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
               ? 'Congratulations! You have unlocked the next day and earned 10 Hero Credits.'
               : mode === 'daily'
                 ? result.lockedUntilTomorrow
-                  ? 'You have used all 3 attempts today. Come back tomorrow!'
-                  : `You didn't reach the 80% pass mark. Go review the topic and come back in 30 minutes. ${result.attemptsLeft ?? 0} attempt(s) remaining today.`
+                  ? `You have used all 3 attempts! Please study your mistakes and try again at ${result.cooldownUntil ? new Date(result.cooldownUntil).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'later'}.`
+                  : `You didn't reach the 80% pass mark. Please review your mistakes and come back in 30 minutes! ${result.attemptsLeft ?? 0} attempt(s) remaining.`
                 : 'You did not reach the 80% pass mark for this test. Keep studying!'
             }
           </p>

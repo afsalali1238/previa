@@ -214,12 +214,19 @@ const RoadmapGrid: React.FC<{ onDayClick?: (dayId: number) => void }> = ({ onDay
                     {attemptInfo.attemptsUsed}/3 used
                   </span>
                 </div>
-                {attemptInfo.isLockedToday && (
-                  <p className="text-[11px] font-bold mt-2" style={{ color: '#ef4444' }}>❌ 3 attempts used today. Come back tomorrow!</p>
+                {attemptInfo.isLockedToday && attemptInfo.cooldownUntil && (
+                  <p className="text-[11px] font-bold mt-2" style={{ color: '#ef4444' }}>
+                    ❌ 3 attempts used! Break time. Come back at {new Date(attemptInfo.cooldownUntil).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                )}
+                {attemptInfo.isLockedToday && !attemptInfo.cooldownUntil && (
+                  <p className="text-[11px] font-bold mt-2" style={{ color: '#ef4444' }}>
+                    ❌ 3 attempts used! Break time.
+                  </p>
                 )}
                 {attemptInfo.cooldownUntil && !attemptInfo.isLockedToday && (
                   <p className="text-[11px] font-bold mt-2" style={{ color: '#f59e0b' }}>
-                    ⏳ Go refer the topic and come back at {new Date(attemptInfo.cooldownUntil).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    ⏳ Go study your mistakes and come back at {new Date(attemptInfo.cooldownUntil).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 )}
                 <p className="text-[10px] mt-1.5" style={{ color: 'var(--text-muted)' }}>Pass mark: 80% · 3 attempts per day</p>

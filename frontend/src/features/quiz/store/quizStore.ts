@@ -18,7 +18,7 @@ interface QuizState {
   bookmarked: Record<number, boolean>;
   mode: 'daily' | 'mock';
   cooldowns: Record<number, number>;       // dayId -> cooldown-until timestamp
-  dailyAttempts: Record<number, { count: number; date: string }>; // dayId -> { count, date }
+  dailyAttempts: Record<number, { count: number; date: number }>; // dayId -> { count, timestamp of last attempt }
 
   startQuiz: (dayId: number, allQuestions: Question[], options?: { mode?: 'daily' | 'mock'; dayRange?: [number, number]; questionCount?: number }) => void;
   submitAnswer: (answerIndex: number) => void;
@@ -31,14 +31,11 @@ interface QuizState {
 
 const PASS_THRESHOLD = 80;
 const MAX_DAILY_ATTEMPTS = 3;
-const FAIL_COOLDOWN_MINS = 30;
+const FAIL_COOLDOWN_MINS = 30; // 30 minutes for 1st/2nd fail
+const EXHAUSTED_COOLDOWN_MINS = 240; // 4 hours for 3rd fail
 const MAX_QUESTIONS_PER_DAY = 50;
 const MIN_QUESTIONS_PER_DAY = 20;
 const REVIEW_QUESTIONS_COUNT = 10;
-
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-}
 
 /** Fisher-Yates shuffle — unbiased random reorder */
 function shuffle<T>(arr: T[]): T[] {
@@ -63,12 +60,25 @@ export const useQuizStore = create<QuizState>()(
 
       getAttemptInfo: (dayId: number) => {
         const { dailyAttempts, cooldowns } = get();
-        const today = todayStr();
         const entry = dailyAttempts[dayId];
-        const attemptsUsed = (entry && entry.date === today) ? entry.count : 0;
+        const now = Date.now();
+
+        let attemptsUsed = 0;
+        let cooldownUntil = cooldowns[dayId] && now < cooldowns[dayId] ? cooldowns[dayId] : null;
+
+        if (entry) {
+          // If a cooldown was active but has now expired, reset attempts
+          if (cooldowns[dayId] && now >= cooldowns[dayId]) {
+            attemptsUsed = 0;
+            cooldownUntil = null;
+          } else {
+            attemptsUsed = entry.count;
+          }
+        }
+
         const attemptsLeft = MAX_DAILY_ATTEMPTS - attemptsUsed;
-        const isLockedToday = attemptsLeft <= 0;
-        const cooldownUntil = cooldowns[dayId] && Date.now() < cooldowns[dayId] ? cooldowns[dayId] : null;
+        const isLockedToday = attemptsLeft <= 0; // It acts as a 4-hour lock now, not full day
+
         return { attemptsUsed, attemptsLeft, isLockedToday, cooldownUntil };
       },
 
@@ -145,14 +155,14 @@ export const useQuizStore = create<QuizState>()(
       setCurrentIndex: (index) => set({ currentIndex: index }),
 
       finishQuiz: (dayId) => {
-        const { questions, answers, dailyAttempts, mode } = get();
+        const { questions, answers, mode } = get();
         const correctCount = questions.reduce((acc, q, i) =>
           answers[i] === q.correctAnswer ? acc + 1 : acc
           , 0);
 
         const score = Math.round((correctCount / questions.length) * 100);
         const passed = score >= PASS_THRESHOLD;
-        const today = todayStr();
+        const now = Date.now();
 
         let cooldownMins = 0;
         let lockedUntilTomorrow = false;
@@ -160,29 +170,30 @@ export const useQuizStore = create<QuizState>()(
 
         if (mode === 'daily') {
           // Update daily attempts
-          const entry = dailyAttempts[dayId];
-          const prevCount = (entry && entry.date === today) ? entry.count : 0;
-          const newCount = prevCount + 1;
+          const { attemptsUsed } = get().getAttemptInfo(dayId);
+          const newCount = passed ? 0 : attemptsUsed + 1;
 
           if (!passed) {
             if (newCount >= MAX_DAILY_ATTEMPTS) {
-              // 3 fails today — locked until tomorrow
-              lockedUntilTomorrow = true;
+              // 3 fails — 4-hour cooldown
+              cooldownMins = EXHAUSTED_COOLDOWN_MINS;
+              lockedUntilTomorrow = true; // Kept for UI compat, but means "Locked 4 hours"
             } else {
               // failed but attempts remain — 30-min cooldown
               cooldownMins = FAIL_COOLDOWN_MINS;
-              const cooldownUntil = Date.now() + (cooldownMins * 60 * 1000);
-              set((state) => ({
-                cooldowns: { ...state.cooldowns, [dayId]: cooldownUntil },
-              }));
             }
+
+            const cooldownUntil = now + (cooldownMins * 60 * 1000);
+            set((state) => ({
+              cooldowns: { ...state.cooldowns, [dayId]: cooldownUntil },
+            }));
           }
 
           // Always record the attempt
           set((state) => ({
             dailyAttempts: {
               ...state.dailyAttempts,
-              [dayId]: { count: newCount, date: today }
+              [dayId]: { count: newCount, date: now }
             },
             // Clear cooldown on pass
             ...(passed ? { cooldowns: { ...state.cooldowns, [dayId]: 0 } } : {}),
