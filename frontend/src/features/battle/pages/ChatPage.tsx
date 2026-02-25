@@ -80,13 +80,13 @@ export const ChatPage: React.FC<ChatPageProps> = ({ userName, onBack }) => {
                                 boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
                             }}>
                                 <span style={{ fontSize: '1.5rem' }}>{room.icon}</span>
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: '0.15rem' }}>{room.name}</div>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: '0.15rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{room.name}</div>
                                     <div style={{ fontSize: '0.75rem', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                         {room.lastMessage}
                                     </div>
                                 </div>
-                                <div style={{ textAlign: 'right' }}>
+                                <div style={{ textAlign: 'right', flexShrink: 0, minWidth: '60px' }}>
                                     {room.unreadCount > 0 && (
                                         <div style={{
                                             width: '20px', height: '20px', borderRadius: '50%', background: '#2563eb',
