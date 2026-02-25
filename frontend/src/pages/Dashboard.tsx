@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../features/auth/store/authStore';
 import { useProviaStore, type ProviaState } from '../features/roadmap/store/proviaStore';
 import { useQuizStore } from '../features/quiz/store/quizStore';
@@ -472,6 +472,36 @@ const SettingsPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               <div className="absolute top-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300" style={{ left: mode === 'dark' ? '22px' : '2px' }} />
             </button>
           </div>
+
+          <button
+            onClick={() => {
+              const { isDevMode, devUnlockAll, devLockAll } = useProviaStore.getState();
+              if (isDevMode) {
+                devLockAll();
+              } else {
+                if (window.prompt('Enter Dev Password:') === '19982') {
+                  devUnlockAll();
+                }
+              }
+            }}
+            className="w-full flex items-center justify-between rounded-xl p-4 active:scale-95"
+            style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-xl">🛠️</span>
+              <div>
+                <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Developer Mode</p>
+                <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Unlock all days & tests</p>
+              </div>
+            </div>
+            <div className="text-xs font-bold px-2 py-1 rounded-md" style={{
+              backgroundColor: useProviaStore.getState().isDevMode ? '#10b98120' : 'var(--border)',
+              color: useProviaStore.getState().isDevMode ? '#10b981' : 'var(--text-muted)'
+            }}>
+              {useProviaStore.getState().isDevMode ? 'ON' : 'OFF'}
+            </div>
+          </button>
+
           <button onClick={logout} className="w-full flex items-center gap-3 rounded-xl p-4 active:scale-95" style={{ backgroundColor: '#ef444415', border: '1px solid #ef444430' }}>
             <LogOut className="w-5 h-5 text-red-500" />
             <p className="text-sm font-bold" style={{ color: '#ef4444' }}>Sign Out</p>
@@ -498,16 +528,12 @@ export const Dashboard: React.FC = () => {
   const streak = useProviaStore((s: ProviaState) => s.streak);
   const heroCredits = useProviaStore((s: ProviaState) => s.heroCredits);
   const updateStreak = useProviaStore((s: ProviaState) => s.updateStreak);
-  const devUnlockAll = useProviaStore((s: ProviaState) => s.devUnlockAll);
-  const devLockAll = useProviaStore((s: ProviaState) => s.devLockAll);
-  const isDevMode = useProviaStore((s: ProviaState) => s.isDevMode);
 
   const { startQuiz } = useQuizStore();
 
   const [tab, setTab] = useState<TabId>('home');
   const [activeQuiz, setActiveQuiz] = useState<number | null>(null);
   const [showSettings, setShowSettings] = useState(false);
-  const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => { updateStreak(); }, [updateStreak]);
 
@@ -539,22 +565,6 @@ export const Dashboard: React.FC = () => {
               alt="Provia"
               className="w-7 h-7 rounded-lg object-contain cursor-pointer transition-transform active:scale-90"
               style={{ backgroundColor: 'transparent' }}
-              onPointerDown={() => {
-                pressTimer.current = setTimeout(() => {
-                  if (!isDevMode) {
-                    if (window.prompt('Enter Dev Password (123 to activate mode):') === '123') {
-                      devUnlockAll();
-                    }
-                  }
-                }, 1500);
-              }}
-              onPointerUp={() => { if (pressTimer.current) clearTimeout(pressTimer.current); }}
-              onPointerLeave={() => { if (pressTimer.current) clearTimeout(pressTimer.current); }}
-              onClick={() => {
-                if (isDevMode) {
-                  devLockAll();
-                }
-              }}
             />
             <span className="text-base font-black italic tracking-tighter bg-gradient-to-r from-blue-500 to-emerald-500 bg-clip-text text-transparent">PROVIA</span>
           </div>
