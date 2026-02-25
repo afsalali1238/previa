@@ -548,7 +548,7 @@ export const Dashboard: React.FC = () => {
                   devLockAll();
                 }
               }}
-              onPointerDown={() => {
+              onTouchStart={() => {
                 pressTimer.current = setTimeout(() => {
                   if (!isDevMode) {
                     if (window.prompt('Enter Dev Password (19982 to activate mode):') === '19982') {
@@ -557,8 +557,18 @@ export const Dashboard: React.FC = () => {
                   }
                 }, 1500);
               }}
-              onPointerUp={() => { if (pressTimer.current) clearTimeout(pressTimer.current); }}
-              onPointerLeave={() => { if (pressTimer.current) clearTimeout(pressTimer.current); }}
+              onTouchEnd={() => { if (pressTimer.current) clearTimeout(pressTimer.current); }}
+              onMouseDown={() => {
+                pressTimer.current = setTimeout(() => {
+                  if (!isDevMode) {
+                    if (window.prompt('Enter Dev Password (19982 to activate mode):') === '19982') {
+                      devUnlockAll();
+                    }
+                  }
+                }, 1500);
+              }}
+              onMouseUp={() => { if (pressTimer.current) clearTimeout(pressTimer.current); }}
+              onMouseLeave={() => { if (pressTimer.current) clearTimeout(pressTimer.current); }}
             />
             <span className="text-base font-black italic tracking-tighter bg-gradient-to-r from-blue-500 to-emerald-500 bg-clip-text text-transparent">PROVIA</span>
           </div>
