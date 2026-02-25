@@ -16,6 +16,7 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
   const [totalTimeSpent, setTotalTimeSpent] = useState(0);
   const [timeLeft, setTimeLeft] = useState(questions.length * 90); // For mock mode (count down, 90s per Q)
   const [showReview, setShowReview] = useState(false);
+  const [reviewingWrong, setReviewingWrong] = useState(false);
 
   // Time tracking
   useEffect(() => {
@@ -93,9 +94,88 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
 
   // ── Result Screen ──
   if (result) {
+    if (reviewingWrong) {
+      const wrongQs = questions.filter((q, i) => answers[i] !== q.correctAnswer);
+
+      return (
+        <div className="fixed inset-0 z-[110] flex flex-col p-4 md:p-8 font-sans overflow-hidden" style={{ backgroundColor: 'var(--bg-primary)' }}>
+          <div className="flex items-center justify-between pb-4" style={{ borderBottom: '1px solid var(--border)' }}>
+            <h2 className="text-xl font-black flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+              <XCircle className="w-6 h-6 text-red-500" /> Review Mistakes
+            </h2>
+            <button onClick={() => setReviewingWrong(false)} className="text-xs font-black uppercase tracking-widest px-4 py-2 rounded-xl active:scale-95" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}>CLOSE</button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto mt-4 space-y-4 pb-20">
+            {wrongQs.length === 0 ? (
+              <div className="text-center mt-10 text-sm font-bold" style={{ color: 'var(--text-muted)' }}>You got everything right! 🏆</div>
+            ) : (
+              wrongQs.map((q, i) => {
+                const qIndex = questions.indexOf(q);
+                const selectedIdx = answers[qIndex];
+                return (
+                  <div key={i} className="p-5 rounded-xl space-y-3" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+                    <p className="text-sm font-bold leading-relaxed" style={{ color: 'var(--text-primary)' }}>{q.question}</p>
+
+                    <div className="space-y-2 mt-3 block">
+                      {/* User's incorrect selection (if any) */}
+                      {selectedIdx !== undefined && selectedIdx !== q.correctAnswer && (
+                        <div className="p-3 rounded-lg text-sm flex items-start gap-3" style={{ backgroundColor: '#ef444410', border: '1px solid #ef444430' }}>
+                          <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded text-[10px] font-black" style={{ backgroundColor: '#ef444420', color: '#ef4444' }}>✗</div>
+                          <div>
+                            <span className="font-bold text-[10px] uppercase tracking-wider mb-1 block" style={{ color: '#ef4444' }}>Your Answer</span>
+                            <span style={{ color: 'var(--text-primary)' }}>{q.options[selectedIdx]}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Correct answer */}
+                      <div className="p-3 rounded-lg text-sm flex items-start gap-3" style={{ backgroundColor: '#10b98110', border: '1px solid #10b98130' }}>
+                        <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded text-[10px] font-black" style={{ backgroundColor: '#10b98120', color: '#10b981' }}>✓</div>
+                        <div>
+                          <span className="font-bold text-[10px] uppercase tracking-wider mb-1 block" style={{ color: '#10b981' }}>Correct Answer</span>
+                          <span style={{ color: 'var(--text-primary)' }}>{q.options[q.correctAnswer]}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {q.explanation && q.explanation.trim() !== '' && (
+                      <div className="mt-4 p-3.5 rounded-xl border text-sm" style={{ backgroundColor: 'var(--accent-blue)' + '10', borderColor: 'var(--accent-blue)' + '30' }}>
+                        <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1.5" style={{ color: 'var(--accent-blue)' }}>
+                          <Star className="w-3 h-3" /> Explanation
+                        </p>
+                        <p className="leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{q.explanation}</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      );
+    }
+
     if (mode === 'mock') {
+      const isFinalMock = dayId === 105;
+
+      // Group topics into 4 main categories if it's the final mock, otherwise leave them as-is
+      const getDhaCategory = (topic: string) => {
+        const t = topic.toLowerCase();
+        if (t.includes('pharmaco') || t.includes('calculate') || t.includes('calculat') || t.includes('dose') || t.includes('molar') || t.includes('ppm')) return 'Pharmaceutical Sciences';
+        if (t.includes('social') || t.includes('behavior') || t.includes('admin') || t.includes('ethic') || t.includes('irb') || t.includes('inventory') || t.includes('economic') || t.includes('communication') || t.includes('regulat') || t.includes('error')) return 'Social/Behavioral/Administrative Sciences';
+        if (t.includes('clinic') || t.includes('therap') || t.includes('disease') || t.includes('asthma') || t.includes('chf') || t.includes('angina') || t.includes('arrhythmia') || t.includes('hypertension') || t.includes('epilepsy') || t.includes('gout') || t.includes('ra ')) return 'Clinical Sciences';
+        return 'Basic Biomedical Sciences';
+      };
+
       const topicsStats = questions.reduce((acc, q, i) => {
-        const topic = q.topic || 'General';
+        let topic = q.topic || 'General';
+        if (isFinalMock) {
+          topic = getDhaCategory(topic);
+        } else {
+          topic = topic.toUpperCase();
+        }
+
         if (!acc[topic]) acc[topic] = { total: 0, correct: 0 };
         acc[topic].total += 1;
         if (answers[i] === q.correctAnswer) acc[topic].correct += 1;
@@ -104,7 +184,6 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
 
       const totalCorrect = Object.values(topicsStats).reduce((sum, s) => sum + s.correct, 0);
       const totalItems = questions.length;
-
       const confNumber = Math.floor(Math.random() * 8999999999) + 1000000000; // Fake 10 digit
 
       return (
@@ -130,38 +209,98 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
               <h3 className="text-base font-semibold text-slate-700">Diagnostic Information</h3>
             </div>
 
-            {/* Table */}
-            <div className="w-full">
-              {/* Table Header */}
-              <div className="grid grid-cols-12 gap-4 pb-3 border-b-2 border-slate-800 text-xs font-bold text-slate-800">
-                <div className="col-span-8"></div>
-                <div className="col-span-2 text-center">Number of Items Correct</div>
-                <div className="col-span-2 text-center">Total Number of Items</div>
-              </div>
+            {/* ── Table Format for Checkpoints (Days 100, 110, 120, 130) ── */}
+            {!isFinalMock && (
+              <div className="w-full mt-4">
+                <div className="grid grid-cols-[3fr_1fr_1fr] gap-4 pb-3 border-b-2 border-slate-800 text-xs font-bold text-slate-800">
+                  <div></div>
+                  <div className="text-center px-2">Number of Items<br />Correct</div>
+                  <div className="text-center px-2">Total Number of<br />Items</div>
+                </div>
 
-              {/* Table Body */}
-              <div className="text-sm text-slate-700">
-                {Object.entries(topicsStats).map(([topicName, stats], i) => (
-                  <div key={i} className="grid grid-cols-12 gap-4 py-4 border-b border-slate-200 items-center">
-                    <div className="col-span-8 font-medium pr-4">{topicName}</div>
-                    <div className="col-span-2 text-center font-semibold">{stats.correct}</div>
-                    <div className="col-span-2 text-center">{stats.total}</div>
+                <div className="text-[13px] text-slate-700">
+                  {Object.entries(topicsStats).map(([topicName, stats], i) => (
+                    <div key={i} className="grid grid-cols-[3fr_1fr_1fr] gap-4 py-5 border-b border-slate-200/60 items-center">
+                      <div className="font-semibold pr-4 tracking-wide text-slate-800">{topicName}</div>
+                      <div className="text-center">{stats.correct}</div>
+                      <div className="text-center">{stats.total}</div>
+                    </div>
+                  ))}
+
+                  <div className="grid grid-cols-[3fr_1fr_1fr] gap-4 py-5 border-b border-slate-200/60 items-center font-bold text-slate-900">
+                    <div>TOTAL</div>
+                    <div className="text-center">{totalCorrect}</div>
+                    <div className="text-center">{totalItems}</div>
                   </div>
-                ))}
-
-                {/* Total Row */}
-                <div className="grid grid-cols-12 gap-4 py-4 border-b-2 border-slate-800 items-center font-bold text-slate-900">
-                  <div className="col-span-8">Total</div>
-                  <div className="col-span-2 text-center">{totalCorrect}</div>
-                  <div className="col-span-2 text-center">{totalItems}</div>
                 </div>
               </div>
-            </div>
+            )}
 
-            <div className="mt-12 flex justify-center">
+            {/* ── Proficiency Bar Format for Final Mock (Day 145) ── */}
+            {isFinalMock && (
+              <div className="text-sm text-gray-700 leading-relaxed mb-8 space-y-4">
+                <p>Notes:</p>
+                <ul className="list-disc pl-6 space-y-1.5 marker:text-gray-800">
+                  <li>Passing this exam is one of the requirements for eligibility to apply for a license in Dubai Health Authority (DHA) in United Arab Emirates.</li>
+                  <li>Passing this exam doesn't make you eligible to practice any field of medicine in Dubai.</li>
+                  <li>DHA reserves the right to re-examine or re-evaluate candidates before issuing a license.</li>
+                </ul>
+              </div>
+            )}
+
+            {isFinalMock && (
+              <div className="w-full mt-10">
+                <div className="grid grid-cols-[1.5fr_1fr_1fr] gap-4 mb-4 font-bold text-sm text-gray-900 border-b pb-2">
+                  <div>Domain Name</div>
+                  <div className="text-center">Low Proficiency Level</div>
+                  <div className="text-right pr-6">High Proficiency Level</div>
+                </div>
+
+                <div className="space-y-6 pt-4">
+                  {Object.entries(topicsStats).map(([topicName, stats], i) => {
+                    const percentage = Math.round((stats.correct / (stats.total || 1)) * 100);
+                    // Ensure dot doesn't overflow container completely, cap between 5 and 95
+                    const safePercentage = Math.max(5, Math.min(95, percentage));
+
+                    return (
+                      <div key={i} className="grid grid-cols-[1.5fr_2fr] gap-4 items-center border-b border-gray-100 pb-6">
+                        <div className="text-[13px] text-gray-800 pr-4 leading-tight">
+                          {topicName}
+                        </div>
+
+                        {/* Bar Container */}
+                        <div className="relative w-full h-8 flex items-center">
+                          {/* Gradient Bar */}
+                          <div className="w-full h-2.5 rounded-full" style={{
+                            background: 'linear-gradient(to right, #f97316 0%, #fbbf24 50%, #84cc16 100%)'
+                          }} />
+
+                          {/* Dot Indicator */}
+                          <div
+                            className="absolute top-1/2 -mt-[9px] w-[18px] h-[18px] bg-white rounded-full flex items-center justify-center flex-col"
+                            style={{
+                              left: `${safePercentage}%`,
+                              boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+                              border: '4px solid #fef08a',
+                              transform: 'translateX(-50%)'
+                            }}
+                          >
+                            <div className="absolute -top-6 whitespace-nowrap text-xs font-bold text-gray-800">
+                              {percentage}%
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <div className="mt-16 flex justify-center pb-12">
               <button
                 onClick={onClose}
-                className="px-8 py-3 bg-slate-900 text-white font-bold text-xs tracking-widest hover:bg-slate-800 transition-colors uppercase"
+                className="px-8 py-3 bg-gray-100 border border-gray-300 text-gray-700 font-bold text-xs tracking-widest hover:bg-gray-200 transition-colors uppercase rounded"
               >
                 Close Report & Return
               </button>
@@ -212,6 +351,14 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
               </span>
             </div>
           </div>
+
+          <button
+            onClick={() => setReviewingWrong(true)}
+            className="w-full py-4 mb-3 rounded-2xl font-black text-xs tracking-widest text-white active:scale-95 transition-transform"
+            style={{ backgroundColor: 'var(--accent-blue)' }}
+          >
+            REVIEW MISTAKES
+          </button>
 
           <button
             onClick={onClose}

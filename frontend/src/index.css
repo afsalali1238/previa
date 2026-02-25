@@ -51,11 +51,7 @@
   background-color: var(--bg-primary);
 }
 
-[data-theme="dark"] .logo-dark-bg {
-  background-color: #ffffff;
-  padding: 2px;
-  border-radius: 8px;
-}
+
 
 * {
   -webkit-tap-highlight-color: transparent;

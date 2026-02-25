@@ -126,7 +126,7 @@ export const HowItWorksPage: React.FC = () => {
                         <ArrowLeft className="w-5 h-5" style={{ color: 'var(--text-muted)' }} />
                         <span className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Back</span>
                     </button>
-                    <img src="/logo-provia.png" alt="Provia" className="w-7 h-7 rounded-lg object-contain logo-dark-bg" />
+                    <img src="/logo-provia.png" alt="Provia" className="w-7 h-7 rounded-lg object-contain" />
                 </div>
             </header>
 

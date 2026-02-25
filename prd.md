@@ -1,4 +1,4 @@
-# Product Requirements Document (PRD)
+     # Product Requirements Document (PRD)
 **Project Name:** PROVIA — 45-Day Prometric Challenge
 **Version:** 3.0 (Zustand + Feature Architecture)
 **Status:** Live & Iterating
@@ -38,7 +38,7 @@
 ### 2.4 Gamification
 * **Hero Credits (HC)**: Earned by passing quizzes, winning battles.
 * **Streak System**: Daily login tracking.
-* **Milestone Tests**: Checkpoint exams at Days 10, 20, 30, 40, and a Final Mock at Day 45.
+* **Milestone Tests**: Checkpoint exams (internal IDs 101-104) at Days 10, 20, 30, 40, and a Final Mock (internal ID 105) covering Day 1 to 45.
 
 ### 2.5 Battle Arena (Simulated)
 * **Quick Match**: Random opponent pairing.

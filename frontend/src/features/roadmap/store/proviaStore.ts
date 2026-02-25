@@ -26,6 +26,8 @@ export interface ProviaState {
   streak: number;
   lastLogin: string | null;
   roadmap: RoadmapDay[];
+  roadmapBackup: RoadmapDay[] | null;
+  isDevMode: boolean;
   duels: Duel[];
 
   addCredits: (amount: number) => void;
@@ -35,6 +37,8 @@ export interface ProviaState {
   updateStreak: () => void;
   startDuel: (duelId: string) => void;
   resolveDuel: (duelId: string, playerScore: number) => void;
+  devUnlockAll: () => void;
+  devLockAll: () => void;
 }
 
 const SCHEDULE_DATA = [
@@ -100,6 +104,8 @@ export const useProviaStore = create<ProviaState>()(
       streak: 0,
       lastLogin: null,
       roadmap: INITIAL_ROADMAP,
+      roadmapBackup: null,
+      isDevMode: false,
       duels: [
         { id: 'd1', opponentName: 'Dr. Sarah', opponentLevel: 5, topic: 'Diuretics', stake: 20, opponentScore: 85, status: 'available' },
         { id: 'd2', opponentName: 'Pharmacist Sam', opponentLevel: 12, topic: 'Antibiotics', stake: 50, opponentScore: 92, status: 'available' }
@@ -143,8 +149,20 @@ export const useProviaStore = create<ProviaState>()(
           duels: s.duels.map(d => d.id === duelId ? { ...d, status: won ? 'won' : 'lost' } : d)
         }));
         if (won) get().addCredits(duel.stake * 2);
-      }
+      },
+
+      devUnlockAll: () => set((s) => ({
+        roadmapBackup: s.roadmapBackup || s.roadmap,
+        isDevMode: true,
+        roadmap: s.roadmap.map(d => ({ ...d, unlocked: true, completed: true }))
+      })),
+
+      devLockAll: () => set((s) => ({
+        roadmap: s.roadmapBackup || s.roadmap,
+        roadmapBackup: null,
+        isDevMode: false
+      }))
     }),
-    { name: 'provia-v2-store' } // Incremented version to refresh local storage
+    { name: 'provia-v2-store-v2' } // Incremented version to refresh local storage
   )
 );
