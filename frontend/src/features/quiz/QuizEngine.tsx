@@ -196,7 +196,7 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 text-xs text-slate-800 gap-4">
               <div>
                 <h1 className="text-sm md:text-base font-bold text-slate-900 mb-1">PROVIA Pharmacy Prometric Exam</h1>
-                <p className="text-slate-500">Day {dayId} Checkpoint / Mock</p>
+                <p className="text-slate-500">{dayId > 100 ? 'Checkpoint / Mock Exam' : `Day ${dayId} Checkpoint / Mock`}</p>
               </div>
               <div className="text-right space-y-1 w-full md:w-auto flex flex-col items-start md:items-end">
                 <p><span className="font-semibold text-slate-600">Date of Exam:</span> {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>

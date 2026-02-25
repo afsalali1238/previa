@@ -551,7 +551,7 @@ export const Dashboard: React.FC = () => {
               onTouchStart={() => {
                 pressTimer.current = setTimeout(() => {
                   if (!isDevMode) {
-                    if (window.prompt('Enter Dev Password (19982 to activate mode):') === '19982') {
+                    if (window.prompt('Enter Dev Password:') === '19982') {
                       devUnlockAll();
                     }
                   }
@@ -561,7 +561,7 @@ export const Dashboard: React.FC = () => {
               onMouseDown={() => {
                 pressTimer.current = setTimeout(() => {
                   if (!isDevMode) {
-                    if (window.prompt('Enter Dev Password (19982 to activate mode):') === '19982') {
+                    if (window.prompt('Enter Dev Password:') === '19982') {
                       devUnlockAll();
                     }
                   }
