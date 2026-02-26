@@ -171,6 +171,13 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
         return 'Basic Biomedical Sciences';
       };
 
+      const initialStats = isFinalMock ? {
+        'Pharmaceutical Sciences': { total: 0, correct: 0 },
+        'Basic Biomedical Sciences': { total: 0, correct: 0 },
+        'Social/Behavioral/Administrative Sciences': { total: 0, correct: 0 },
+        'Clinical Sciences': { total: 0, correct: 0 }
+      } : {};
+
       const topicsStats = questions.reduce((acc, q, i) => {
         let topic = q.topic || 'General';
         if (isFinalMock) {
@@ -183,7 +190,7 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
         acc[topic].total += 1;
         if (answers[i] === q.correctAnswer) acc[topic].correct += 1;
         return acc;
-      }, {} as Record<string, { total: number; correct: number }>);
+      }, initialStats as Record<string, { total: number; correct: number }>);
 
       const totalCorrect = Object.values(topicsStats).reduce((sum, s) => sum + s.correct, 0);
       const totalItems = questions.length;
@@ -267,12 +274,12 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
 
                     return (
                       <div key={i} className="grid grid-cols-[1.5fr_2fr] gap-4 items-center border-b border-gray-100 pb-6">
-                        <div className="text-[13px] text-gray-800 pr-4 leading-tight">
-                          {topicName}
+                        <div className="text-[13px] text-gray-800 pr-4 leading-tight min-w-0 break-words">
+                          {topicName.replace(/\//g, ' / ')}
                         </div>
 
                         {/* Bar Container */}
-                        <div className="relative w-full h-8 flex items-center">
+                        <div className="relative w-full h-8 flex items-center min-w-0">
                           {/* Gradient Bar */}
                           <div className="w-full h-2.5 rounded-full" style={{
                             background: 'linear-gradient(to right, #f97316 0%, #fbbf24 50%, #84cc16 100%)'
